@@ -108,15 +108,22 @@ export default function NavComponent({ isVisible = true, scrolled = false }) {
     if (!menuOpen) return undefined;
 
     const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
     const handleKeyDown = (event) => {
       if (event.key === "Escape") setMenuOpen(false);
     };
 
     document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [menuOpen]);
