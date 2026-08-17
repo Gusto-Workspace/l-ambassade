@@ -9,7 +9,7 @@ export default function ReservationWaitlistOfferPage({ token }) {
         title="Liste d’attente - L’Ambassade"
         description="Répondez à une proposition de place pour votre réservation à L’Ambassade."
         path={token ? `/reservations/waitlist-offer/${token}` : "/reservations"}
-        image="/img/home/header.png"
+        image="/img/home/header.webp"
         noIndex={true}
       />
 

@@ -16,8 +16,8 @@ const sections = [
 ];
 
 export default function PolicyPage({ seoRestaurantData = null }) {
-  return <><SeoHeadComponent title="Politique de confidentialité | L’Ambassade" description="Politique de confidentialité du site L’Ambassade." path="/policy" image="/img/home/header.png" restaurantData={seoRestaurantData} />
-    <main className="ambassade-inner-page"><NavComponent /><InnerPageHeroComponent image="/img/home/header.png" title="Confidentialité" tagline="Données, transparence & droits." />
+  return <><SeoHeadComponent title="Politique de confidentialité | L’Ambassade" description="Politique de confidentialité du site L’Ambassade." path="/policy" image="/img/home/header.webp" restaurantData={seoRestaurantData} />
+    <main className="ambassade-inner-page"><NavComponent /><InnerPageHeroComponent image="/img/home/header.webp" title="Confidentialité" tagline="Données, transparence & droits." />
       <section className="ambassade-legal"><p className="ambassade-legal__intro">Les traitements décrits correspondent aux fonctionnalités actuellement proposées sur le site.</p>{sections.map(([title, body]) => <article key={title}><h2>{title}</h2><p>{body}</p></article>)}</section>
     </main><FooterComponent /></>;
 }

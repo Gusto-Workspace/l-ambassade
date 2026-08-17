@@ -7,7 +7,7 @@ export default function ReservationFlowShell({ eyebrow, title, children }) {
     <div className="ambassade-flow-page">
       <NavComponent scrolled />
       <main className="ambassade-flow-main">
-        <Image src="/img/reservations/header.jpg" alt="" fill priority sizes="100vw" className="ambassade-flow-main__image" />
+        <Image src="/img/reservations/header.webp" alt="" fill priority sizes="100vw" className="ambassade-flow-main__image" />
         <div className="ambassade-flow-main__veil" />
         <section className="ambassade-flow-panel">
           <p className="ambassade-flow-panel__eyebrow">{eyebrow}</p>

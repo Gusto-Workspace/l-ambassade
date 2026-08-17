@@ -18,7 +18,7 @@ export default function InfosContactComponent() {
                 </h2>
                 <div className="relative h-6 w-10 rotate-[30deg]">
                   <Image
-                    src="/img/_shared/logo-bg-white.png"
+                    src="/img/_shared/logo-bg-white.webp"
                     alt=""
                     fill
                     sizes="40px"
@@ -37,7 +37,7 @@ export default function InfosContactComponent() {
 
             <div className="relative mt-14 h-16 w-16">
               <Image
-                src="/img/home/leaf.png"
+                src="/img/home/leaf.webp"
                 alt=""
                 fill
                 sizes="64px"

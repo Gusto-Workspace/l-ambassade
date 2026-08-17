@@ -11,7 +11,13 @@ import FormContactCompnent from "@/components/contact/form.contact.component";
 import ReservationHomeSection from "@/components/home/sections/reservation.home.section";
 import SeoHeadComponent from "@/components/_shared/seo/seo-head.component";
 import { buildStaticPageProps } from "@/_assets/utils/page-props.utils";
-import { buildContactInfos, getMapEmbedSrc } from "@/_assets/utils/contact.utils";
+import {
+  buildContactInfos,
+  buildContactSchedules,
+  formatContactDayRange,
+  getMapEmbedSrc,
+  groupContactSchedules,
+} from "@/_assets/utils/contact.utils";
 
 export default function ContactPage({ seoRestaurantData = null }) {
   const { restaurantContext } = useContext(GlobalContext);
@@ -23,6 +29,7 @@ export default function ContactPage({ seoRestaurantData = null }) {
   const phone = infos.find((item) => item.key === "phone");
   const email = infos.find((item) => item.key === "email");
   const mapSrc = getMapEmbedSrc(restaurant);
+  const scheduleGroups = groupContactSchedules(buildContactSchedules(restaurant));
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -36,10 +43,10 @@ export default function ContactPage({ seoRestaurantData = null }) {
   }, []);
 
   return <>
-    <SeoHeadComponent title="Contact | L’Ambassade" description="Contactez L’Ambassade et préparez votre venue à Montauban." path="/contact" image="/img/contact/header.jpg" restaurantData={seoRestaurantData} />
+    <SeoHeadComponent title="Contact | L’Ambassade" description="Contactez L’Ambassade et préparez votre venue à Montauban." path="/contact" image="/img/contact/header.webp" restaurantData={seoRestaurantData} />
     <main className="ambassade-inner-page">
       <NavComponent scrolled={scrolled} />
-      <InnerPageHeroComponent heroRef={heroRef} image="/img/contact/header.jpg" imagePosition="center 48%" title="Contact & accès" tagline="Une question, une envie ? Écrivez-nous." />
+      <InnerPageHeroComponent heroRef={heroRef} image="/img/contact/header.webp" imagePosition="center 48%" title="Contact & accès" tagline="Une question, une envie ? Écrivez-nous." />
       <section className="ambassade-contact-intro">
         <EditorialHeadingComponent title="Parlons de votre venue." description="Notre équipe vous répond pour toute question, demande particulière ou projet de groupe." />
         <div className="ambassade-contact-grid">
@@ -49,7 +56,9 @@ export default function ContactPage({ seoRestaurantData = null }) {
             <ContactLine icon={MapPin} title="L’Ambassade" text={address?.value} />
             <ContactLine icon={Phone} title="Nous appeler" href={phone?.href} text={phone?.value} />
             <ContactLine icon={Mail} title="Nous écrire" href={email?.href} text={email?.value} />
-            <ContactLine icon={Clock3} title="Horaires" text="Du mardi au dimanche · Horaires à venir" />
+            <ContactLine icon={Clock3} title="Horaires">
+              <ScheduleGroups groups={scheduleGroups} />
+            </ContactLine>
             <div className="ambassade-contact-divider" />
             <ContactLine icon={Users} title="Groupes & privatisation" text="Pour vos grandes tables et événements, contactez directement notre équipe." />
           </aside>
@@ -58,7 +67,7 @@ export default function ContactPage({ seoRestaurantData = null }) {
       <section className="ambassade-contact-map">
         <div className="ambassade-contact-map__frame">{mapSrc ? <iframe title="Plan d’accès à L’Ambassade" src={mapSrc} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /> : <span>Montauban</span>}</div>
         <div className="ambassade-contact-map__visit">
-          <div className="ambassade-contact-map__image"><Image src="/img/contact/calm.jpg" alt="Les extérieurs de L’Ambassade" fill sizes="(max-width: 767px) 100vw, 55vw" className="object-cover" /></div>
+          <div className="ambassade-contact-map__image"><Image src="/img/contact/calm.webp" alt="Les extérieurs de L’Ambassade" fill sizes="(max-width: 767px) 100vw, 55vw" className="object-cover" /></div>
           <EditorialHeadingComponent title="Au calme, à Montauban." description="Un lieu à part, à quelques minutes du centre-ville." />
           <div className="ambassade-contact-map__actions"><a className="ambassade-button ambassade-button--outline" href={mapSrc ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address?.value || "L'Ambassade Montauban")}` : "#"} target="_blank" rel="noreferrer">Ouvrir l’itinéraire</a><Link className="ambassade-button ambassade-button--outline" href="/reservations">Réserver une table</Link></div>
         </div>
@@ -69,9 +78,14 @@ export default function ContactPage({ seoRestaurantData = null }) {
   </>;
 }
 
-function ContactLine({ icon: Icon, title, text, href }) {
-  const content = <><strong>{title}</strong><span>{text || "À venir"}</span></>;
+function ContactLine({ icon: Icon, title, text, href, children }) {
+  const content = <><strong>{title}</strong>{children || <span>{text || "À venir"}</span>}</>;
   return <div className="ambassade-contact-line"><Icon size={30} strokeWidth={1.25} />{href ? <a href={href}>{content}</a> : <div>{content}</div>}</div>;
+}
+
+function ScheduleGroups({ groups }) {
+  if (!groups.length) return <span>Horaires à venir</span>;
+  return <div className="ambassade-contact-schedules">{groups.map((group) => <p key={`${group.days[0]}-${group.hours}`}><b>{formatContactDayRange(group.days)}</b><span>{group.hours}</span></p>)}</div>;
 }
 
 export async function getStaticProps({ locale }) { return buildStaticPageProps(locale, ["common"]); }

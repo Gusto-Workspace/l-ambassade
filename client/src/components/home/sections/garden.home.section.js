@@ -7,7 +7,7 @@ export default function GardenHomeSection() {
       <div className="ambassade-container ambassade-garden__layout">
         <RevealOnScrollComponent variant="left" className="ambassade-garden__photo ambassade-garden__photo--veranda site-media-zoom">
           <Image
-            src="/img/home/le-jardin.jpg"
+            src="/img/home/le-jardin.webp"
             alt="Salle sous la verrière entourée de plantes"
             fill
             sizes="(max-width: 767px) 100vw, 48vw"
@@ -16,7 +16,7 @@ export default function GardenHomeSection() {
         </RevealOnScrollComponent>
 
         <RevealOnScrollComponent variant="soft" className="ambassade-garden__photo ambassade-garden__photo--leaf site-media-zoom" aria-hidden="true">
-          <Image src="/img/home/leaf.png" alt="" fill sizes="(max-width: 767px) 100vw, 12vw" className="object-cover" />
+          <Image src="/img/home/leaf.webp" alt="" fill sizes="(max-width: 767px) 100vw, 12vw" className="object-cover" />
         </RevealOnScrollComponent>
 
         <RevealOnScrollComponent

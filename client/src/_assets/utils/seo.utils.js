@@ -2,8 +2,8 @@ import { getRestaurantDisplayName, getSocialLinks } from "./site-display.utils";
 
 export const DEFAULT_SITE_NAME = "L’Ambassade";
 export const DEFAULT_SITE_URL = "http://localhost:8003";
-export const DEFAULT_SOCIAL_IMAGE = "/img/home/header.png";
-export const DEFAULT_LOGO_IMAGE = "/img/_shared/logo-bg-white.png";
+export const DEFAULT_SOCIAL_IMAGE = "/img/_shared/og-cover.webp";
+export const DEFAULT_LOGO_IMAGE = "/img/_shared/logo-bg-white.webp";
 
 const schemaDayByKey = {
   lundi: "Monday",

@@ -37,7 +37,7 @@ export default function HomePage({ seoRestaurantData = null }) {
         title="L’Ambassade | Restaurant, bar & lounge à Montauban"
         description="Découvrez L’Ambassade à Montauban : une cuisine généreuse, un jardin avec piscine et une atmosphère vivante du déjeuner à la soirée."
         path="/"
-        image="/img/home/header.png"
+        image="/img/home/header.webp"
         breadcrumbs={[{ name: "Accueil", path: "/" }]}
         restaurantData={seoRestaurantData}
       />

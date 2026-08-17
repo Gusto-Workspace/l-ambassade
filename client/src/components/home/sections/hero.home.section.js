@@ -6,7 +6,7 @@ export default function HeroHomeSection({ heroRef = null }) {
   return (
     <section ref={heroRef} className="ambassade-hero" aria-labelledby="home-hero-title">
       <Image
-        src="/img/home/header.png"
+        src="/img/home/header.webp"
         alt="Jardin, piscine et maison de L’Ambassade à Montauban"
         fill
         priority

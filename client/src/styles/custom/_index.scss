@@ -143,7 +143,15 @@
 .ambassade-contact-field { display:block; margin-bottom:21px; }
 .ambassade-contact-field > span { display:block; margin-bottom:9px; font-size:10px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
 .ambassade-contact-field input,.ambassade-contact-field select,.ambassade-contact-field textarea { width:100%; min-height:42px; border:0; border-bottom:1px solid rgba(39,37,33,.35); border-radius:0; background:transparent; color:var(--color-text); font:inherit; outline:none; }
-.ambassade-contact-field textarea { border:1px solid rgba(39,37,33,.35); padding:12px; resize:vertical; }
+.ambassade-contact-field textarea {
+  height: 112px;
+  max-height: 112px;
+  overflow-y: auto;
+  border: 1px solid rgba(39,37,33,.35);
+  padding: 12px;
+  line-height: 1.55;
+  resize: none;
+}
 .ambassade-contact-field small,.ambassade-form-error { color:#9e3535; font-size:11px; }
 .ambassade-contact-consent { display:flex; align-items:flex-start; gap:12px; margin:25px 0; font-size:11px; line-height:1.6; }
 .ambassade-contact-consent input { width:20px; height:20px; flex:0 0 auto; accent-color:var(--color-copper); }
@@ -379,7 +387,7 @@ a {
   left: 0;
   width: 100%;
   color: var(--color-white);
-  transition: color 300ms ease, background-color 300ms ease, transform 300ms ease;
+  transition: color 300ms ease, background-color 300ms ease, transform 500ms cubic-bezier(0.22, 1, 0.36, 1), opacity 500ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .ambassade-nav--scrolled {
@@ -390,7 +398,12 @@ a {
 }
 
 .ambassade-nav--hidden {
+  opacity: 0;
   transform: translateY(-100%);
+}
+
+.ambassade-nav--no-transition {
+  transition: none;
 }
 
 .ambassade-nav__inner {
@@ -2580,7 +2593,19 @@ a {
 .ambassade-customer-form__message span { display: block; margin-bottom: 9px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
 .ambassade-booking-field input { width: 100%; min-height: 44px; border: 0; border-bottom: 1px solid rgba(39,37,33,.35); border-radius: 0; background: transparent; font-size: 16px; outline: none; }
 .ambassade-customer-form__message { display: block; margin-top: 28px; }
-.ambassade-customer-form__message textarea { width: 100%; border: 1px solid rgba(39,37,33,.35); border-radius: 0; background: transparent; padding: 13px; font: inherit; resize: vertical; }
+.ambassade-customer-form__message textarea {
+  width: 100%;
+  height: 112px;
+  max-height: 112px;
+  overflow-y: auto;
+  border: 1px solid rgba(39,37,33,.35);
+  border-radius: 0;
+  background: transparent;
+  padding: 13px;
+  font: inherit;
+  line-height: 1.55;
+  resize: none;
+}
 .ambassade-customer-form__actions { display: flex; justify-content: space-between; gap: 18px; margin-top: 28px; }
 .ambassade-customer-form__actions button { min-height: 46px; border: 1px solid var(--color-copper); background: transparent; padding: 0 25px; color: var(--color-copper-dark); font-size: 10px; font-weight: 600; text-transform: uppercase; }
 .ambassade-customer-form__actions button:last-child { background: var(--color-copper); color: white; }
@@ -2596,7 +2621,7 @@ a {
   right: -20px;
   width: 260px;
   height: 220px;
-  background: url('/img/home/leaf.png') center / contain no-repeat;
+  background: url('/img/home/leaf.webp') center / contain no-repeat;
   content: "";
   opacity: .2;
 }
@@ -2621,3 +2646,348 @@ a {
   .ambassade-booking-confirmation { min-height: 440px; }
   .ambassade-booking-question::after { right: -90px; }
 }
+
+/* Parcours techniques de réservation : empreinte, reprise et liste d’attente. */
+.ambassade-flow-main {
+  position: relative;
+  display: grid;
+  min-height: 850px;
+  place-items: center;
+  overflow: hidden;
+  padding: 150px 24px 80px;
+}
+
+.ambassade-flow-main__image {
+  object-fit: cover;
+  object-position: center 48%;
+}
+
+.ambassade-flow-main__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(8, 20, 16, .64), rgba(8, 20, 16, .78));
+}
+
+.ambassade-flow-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 720px);
+  border-top: 3px solid var(--color-copper);
+  background: var(--color-ivory-light);
+  padding: 48px 58px 55px;
+  color: var(--color-text);
+}
+
+.ambassade-flow-panel__eyebrow {
+  margin: 0 0 12px;
+  color: var(--color-copper-dark);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.ambassade-flow-panel > h1 {
+  font-size: clamp(35px, 4vw, 52px);
+  line-height: 1.04;
+  text-align: center;
+}
+
+.ambassade-flow-panel__ornament {
+  display: grid;
+  width: 190px;
+  align-items: center;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  margin: 17px auto 34px;
+  color: var(--color-copper);
+  font-size: 10px;
+}
+
+.ambassade-flow-panel__ornament i { border-top: 1px solid currentColor; }
+
+.ambassade-flow-status {
+  display: flex;
+  min-height: 250px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 17px;
+  text-align: center;
+}
+
+.ambassade-flow-status > svg { color: var(--color-copper-dark); }
+.ambassade-flow-status--success > svg { color: var(--color-forest); }
+.ambassade-flow-status--error > svg { color: #9e3535; }
+.ambassade-flow-status h2 { margin: 0; font-family: var(--font-bodoni-moda), Didot, serif; font-size: 30px; font-weight: 400; text-transform: uppercase; }
+.ambassade-flow-status p { max-width: 510px; margin: 0; font-size: 14px; line-height: 1.75; }
+.ambassade-flow-actions { display: flex; gap: 12px; margin-top: 10px; }
+.ambassade-flow-actions a { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; border: 1px solid var(--color-copper); padding: 0 19px; color: var(--color-copper-dark); font-size: 10px; font-weight: 600; text-transform: uppercase; }
+.ambassade-flow-actions a:first-child { background: var(--color-copper); color: white; }
+
+.ambassade-bank-form__intro {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  align-items: start;
+  gap: 18px;
+  margin-bottom: 25px;
+  color: var(--color-forest);
+}
+
+.ambassade-bank-form__intro p { margin: 0; color: var(--color-text); font-size: 13px; line-height: 1.75; }
+.ambassade-bank-form__amount { display: flex; align-items: center; justify-content: space-between; border-block: 1px solid var(--color-line); padding: 18px 0; }
+.ambassade-bank-form__amount span { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.ambassade-bank-form__amount strong { color: var(--color-copper-dark); font-family: var(--font-bodoni-moda), Didot, serif; font-size: 25px; font-weight: 400; }
+.ambassade-bank-form__payment { margin: 28px 0; }
+.ambassade-flow-primary { display: flex; width: 100%; min-height: 50px; align-items: center; justify-content: center; gap: 12px; border: 0; background: var(--color-copper); color: white; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.ambassade-flow-primary:disabled { cursor: wait; opacity: .55; }
+.ambassade-bank-form__secure { margin: 15px 0 0; color: var(--color-muted); font-size: 10px; line-height: 1.6; text-align: center; }
+.ambassade-flow-alert { display: grid; grid-template-columns: 21px 1fr; align-items: start; gap: 11px; margin: 20px 0; border: 1px solid var(--color-line); padding: 13px; font-size: 12px; line-height: 1.55; }
+.ambassade-flow-alert p { margin: 0; }
+.ambassade-flow-alert--error { border-color: rgba(158,53,53,.35); color: #8f3030; }
+.ambassade-flow-alert--success { border-color: rgba(21,60,47,.35); color: var(--color-forest); }
+
+.ambassade-waitlist__intro { max-width: 540px; margin: 0 auto 30px; font-size: 14px; line-height: 1.75; text-align: center; }
+.ambassade-waitlist__details { display: grid; grid-template-columns: repeat(3, 1fr); border-block: 1px solid var(--color-line); padding: 25px 0; }
+.ambassade-waitlist__details > div { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 14px; }
+.ambassade-waitlist__details > div + div { border-left: 1px solid var(--color-line); }
+.ambassade-waitlist__details svg { color: var(--color-copper-dark); }
+.ambassade-waitlist__details p,.ambassade-waitlist__details span,.ambassade-waitlist__details strong { display: block; margin: 0; }
+.ambassade-waitlist__details span { margin-bottom: 4px; color: var(--color-muted); font-size: 9px; font-weight: 600; text-transform: uppercase; }
+.ambassade-waitlist__details strong { font-family: var(--font-bodoni-moda), Didot, serif; font-size: 13px; font-weight: 400; text-transform: capitalize; }
+.ambassade-waitlist__expires { margin: 22px 0; font-size: 12px; text-align: center; }
+.ambassade-waitlist__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 26px; }
+.ambassade-waitlist__actions button { display: flex; min-height: 48px; align-items: center; justify-content: center; gap: 9px; border: 1px solid var(--color-copper); background: var(--color-copper); color: white; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+.ambassade-waitlist__actions button:last-child { background: transparent; color: var(--color-copper-dark); }
+.ambassade-waitlist__actions svg { width: 17px; }
+
+.ambassade-booking-return { display: flex; width: min(100% - 40px, 850px); align-items: center; justify-content: center; gap: 12px; margin: 30px auto 0; border: 1px solid var(--color-line); padding: 13px 18px; color: var(--color-forest); font-size: 12px; text-align: center; }
+.ambassade-booking-return p { margin: 0; }
+.ambassade-booking-return--error { flex-wrap: wrap; border-color: rgba(158,53,53,.35); color: #8f3030; }
+.ambassade-booking-return a { border-bottom: 1px solid currentColor; font-weight: 600; text-transform: uppercase; }
+
+.ambassade-manage__status-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  color: var(--color-muted);
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.ambassade-manage__pill {
+  border: 1px solid var(--color-line);
+  padding: 7px 12px;
+  color: var(--color-copper-dark);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .1em;
+}
+
+.ambassade-manage__pill--confirmed,
+.ambassade-manage__pill--active { border-color: rgba(21,60,47,.35); color: var(--color-forest); }
+.ambassade-manage__pill--canceled,
+.ambassade-manage__pill--rejected,
+.ambassade-manage__pill--noshow { border-color: rgba(158,53,53,.35); color: #8f3030; }
+
+.ambassade-manage__details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-block: 1px solid var(--color-line);
+  padding: 22px 0;
+}
+
+.ambassade-manage__details > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  padding: 0 12px;
+}
+
+.ambassade-manage__details > div + div { border-left: 1px solid var(--color-line); }
+.ambassade-manage__details svg,
+.ambassade-manage__identity svg,
+.ambassade-manage__action > svg { color: var(--color-copper-dark); }
+.ambassade-manage__details p,
+.ambassade-manage__details span,
+.ambassade-manage__details strong,
+.ambassade-manage__identity p,
+.ambassade-manage__identity span,
+.ambassade-manage__identity strong { display: block; margin: 0; }
+.ambassade-manage__details span,
+.ambassade-manage__identity span { margin-bottom: 4px; color: var(--color-muted); font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.ambassade-manage__details strong { font-family: var(--font-bodoni-moda), Didot, serif; font-size: 13px; font-weight: 400; text-transform: capitalize; }
+
+.ambassade-manage__identity {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 28px;
+  padding: 18px 0 2px;
+}
+
+.ambassade-manage__identity > div { display: grid; grid-template-columns: 25px 1fr; gap: 9px; border-bottom: 1px solid rgba(216,197,182,.65); padding: 13px 0; }
+.ambassade-manage__identity strong { overflow-wrap: anywhere; font-size: 12px; font-weight: 400; line-height: 1.55; }
+
+.ambassade-manage__action { margin-top: 30px; text-align: center; }
+.ambassade-manage__action > h2 { margin: 10px 0 8px; font-family: var(--font-bodoni-moda), Didot, serif; font-size: 29px; font-weight: 400; line-height: 1.05; text-transform: uppercase; }
+.ambassade-manage__action > p { max-width: 530px; margin: 0 auto 20px; font-size: 13px; line-height: 1.7; }
+.ambassade-manage__action--success > svg { color: var(--color-forest); }
+.ambassade-manage .ambassade-flow-actions { justify-content: center; }
+.ambassade-manage .ambassade-flow-actions button,
+.ambassade-manage .ambassade-flow-actions a { flex: 1; min-height: 48px; }
+.ambassade-manage .ambassade-flow-actions a + a { background: transparent; color: var(--color-copper-dark); }
+
+.ambassade-manage__confirm { margin-top: 22px; border: 1px solid rgba(158,53,53,.32); padding: 18px; }
+.ambassade-manage__confirm > p { margin: 0 0 15px; font-size: 13px; line-height: 1.6; }
+.ambassade-manage__confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.ambassade-manage__confirm-actions button { display: flex; min-height: 46px; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--color-copper); background: var(--color-copper); color: white; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+.ambassade-manage__confirm-actions button:last-child { background: transparent; color: var(--color-copper-dark); }
+.ambassade-manage__confirm-actions button:disabled { cursor: wait; opacity: .55; }
+.ambassade-manage__contact { margin: 28px 0 0; color: var(--color-muted); font-size: 11px; line-height: 1.7; text-align: center; }
+.ambassade-manage__contact a { border-bottom: 1px solid var(--color-copper); color: var(--color-copper-dark); }
+
+@media (max-width: 767px) {
+  .ambassade-flow-main { min-height: 760px; padding: 112px 18px 50px; }
+  .ambassade-flow-panel { padding: 38px 22px 42px; }
+  .ambassade-flow-panel > h1 { font-size: 36px; }
+  .ambassade-flow-actions,.ambassade-waitlist__actions { width: 100%; grid-template-columns: 1fr; flex-direction: column; }
+  .ambassade-flow-actions a { width: 100%; }
+  .ambassade-waitlist__details { grid-template-columns: 1fr; }
+  .ambassade-waitlist__details > div { justify-content: flex-start; padding: 17px 8px; }
+  .ambassade-waitlist__details > div + div { border-top: 1px solid var(--color-line); border-left: 0; }
+  .ambassade-manage__status-line { align-items: flex-start; flex-direction: column; }
+  .ambassade-manage__details { grid-template-columns: 1fr; }
+  .ambassade-manage__details > div { justify-content: flex-start; padding: 15px 7px; }
+  .ambassade-manage__details > div + div { border-top: 1px solid var(--color-line); border-left: 0; }
+  .ambassade-manage__identity { grid-template-columns: 1fr; }
+  .ambassade-manage__confirm-actions { grid-template-columns: 1fr; }
+}
+
+.ambassade-pending-modal {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.ambassade-pending-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 17, 13, .76);
+  backdrop-filter: blur(5px);
+}
+
+.ambassade-pending-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 640px);
+  border-top: 3px solid var(--color-copper);
+  background: var(--color-ivory-light);
+  padding: 44px 48px 46px;
+  text-align: center;
+}
+
+.ambassade-pending-modal__panel > svg { color: var(--color-copper-dark); }
+.ambassade-pending-modal__eyebrow { margin: 13px 0 9px; color: var(--color-copper-dark); font-size: 10px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; }
+.ambassade-pending-modal__panel h2 { font-size: clamp(34px, 4.3vw, 48px); line-height: 1.04; }
+.ambassade-pending-modal__panel > p:not(.ambassade-pending-modal__eyebrow) { max-width: 510px; margin: 20px auto 0; font-size: 14px; line-height: 1.75; }
+.ambassade-pending-modal__summary { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 28px; border-block: 1px solid var(--color-line); padding: 20px 0; }
+.ambassade-pending-modal__summary span + span { border-left: 1px solid var(--color-line); }
+.ambassade-pending-modal__summary small,.ambassade-pending-modal__summary strong { display: block; }
+.ambassade-pending-modal__summary small { color: var(--color-muted); font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.ambassade-pending-modal__summary strong { margin-top: 7px; font-family: var(--font-bodoni-moda), Didot, serif; font-size: 17px; font-weight: 400; }
+.ambassade-pending-modal__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 28px; }
+.ambassade-pending-modal__actions button { min-height: 48px; border: 1px solid var(--color-copper); background: transparent; color: var(--color-copper-dark); font-size: 10px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
+.ambassade-pending-modal__actions button:last-child { background: var(--color-copper); color: white; }
+.ambassade-pending-modal__actions button:disabled { cursor: wait; opacity: .55; }
+
+@media (max-width: 600px) {
+  .ambassade-pending-modal__panel { padding: 36px 21px 28px; }
+  .ambassade-pending-modal__summary { grid-template-columns: 1fr; }
+  .ambassade-pending-modal__summary span { padding: 12px 0; }
+  .ambassade-pending-modal__summary span + span { border-top: 1px solid var(--color-line); border-left: 0; }
+  .ambassade-pending-modal__actions { grid-template-columns: 1fr; }
+}
+
+.ambassade-footer__schedule + .ambassade-footer__schedule {
+  margin-top: 11px;
+}
+
+.ambassade-footer__schedule strong {
+  color: var(--color-white);
+}
+
+.ambassade-contact-schedules {
+  margin-top: 8px;
+}
+
+.ambassade-contact-schedules p {
+  margin: 0 0 10px;
+}
+
+.ambassade-contact-schedules b,
+.ambassade-contact-schedules span {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.ambassade-contact-schedules b {
+  color: var(--color-white);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.ambassade-contact-schedules span {
+  margin-top: 1px;
+  color: rgba(255, 253, 248, .78);
+}
+
+.ambassade-news-feature__media > img,
+.ambassade-news-row__media > img,
+.ambassade-news-modal__image > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.ambassade-news-state {
+  display: flex;
+  min-height: 320px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.ambassade-news-modal__body {
+  margin-top: 25px;
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.ambassade-news-modal__body p,
+.ambassade-news-modal__body ul,
+.ambassade-news-modal__body ol {
+  margin: 14px 0 0;
+}
+
+.ambassade-news-modal__body ul,
+.ambassade-news-modal__body ol {
+  padding-left: 22px;
+}
+
+.ambassade-news-modal__body ul { list-style: disc; }
+.ambassade-news-modal__body ol { list-style: decimal; }
+.ambassade-news-modal__body a { color: var(--color-copper-dark); text-decoration: underline; text-underline-offset: 3px; }

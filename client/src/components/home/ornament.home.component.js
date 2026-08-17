@@ -7,7 +7,7 @@ export function ColumnEmblem({ light = false }) {
       aria-hidden="true"
     >
       <Image
-        src="/img/_shared/logo-bg-transparent.png"
+        src="/img/_shared/logo-bg-transparent.webp"
         alt=""
         fill
         sizes="48px"

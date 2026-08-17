@@ -2,7 +2,7 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import RevealOnScrollComponent from "../motion/reveal-on-scroll.component";
 
-const FALLBACK_BANNER = "/img/home/header.png";
+const FALLBACK_BANNER = "/img/home/header.webp";
 
 function normalizeBannerSrc(imgUrl) {
   if (!imgUrl) {

@@ -28,7 +28,7 @@ export default function MenusPage({ seoRestaurantData = null }) {
         title="Carte & menus | L’Ambassade"
         description="Découvrez la carte actuelle de L’Ambassade à Montauban."
         path="/menus"
-        image="/img/menu/header.jpg"
+        image="/img/menu/header.webp"
         breadcrumbs={[
           { name: "Accueil", path: "/" },
           { name: "Carte & menus", path: "/menus" },
@@ -41,7 +41,7 @@ export default function MenusPage({ seoRestaurantData = null }) {
         <main>
           <InnerPageHeroComponent
             heroRef={heroRef}
-            image="/img/menu/header.jpg"
+            image="/img/menu/header.webp"
             imagePosition="center 66%"
             title="Carte & menus"
             tagline="Une cuisine vivante, généreuse et faite sur place."

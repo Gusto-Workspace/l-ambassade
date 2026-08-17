@@ -4,7 +4,12 @@ import { useContext } from "react";
 import { Instagram } from "lucide-react";
 import { GlobalContext } from "@/contexts/global.context";
 import { getSocialLinks } from "@/_assets/utils/site-display.utils";
-import { buildContactInfos } from "@/_assets/utils/contact.utils";
+import {
+  buildContactInfos,
+  buildContactSchedules,
+  formatContactDayRange,
+  groupContactSchedules,
+} from "@/_assets/utils/contact.utils";
 
 export default function FooterComponent() {
   const { restaurantContext } = useContext(GlobalContext);
@@ -13,6 +18,7 @@ export default function FooterComponent() {
     (item) => item.icon === "instagram" && item.href,
   );
   const address = buildContactInfos(restaurantData).find((item) => item.key === "address");
+  const scheduleGroups = groupContactSchedules(buildContactSchedules(restaurantData));
 
   return (
     <footer className="ambassade-footer">
@@ -21,7 +27,7 @@ export default function FooterComponent() {
           <Link href="/" aria-label="Accueil — L’Ambassade">
             <span className="ambassade-footer__mark">
               <Image
-                src="/img/_shared/logo-bg-transparent.png"
+                src="/img/_shared/logo-bg-transparent.webp"
                 alt=""
                 fill
                 sizes="72px"
@@ -58,8 +64,12 @@ export default function FooterComponent() {
 
         <div className="ambassade-footer__hours">
           <p>Horaires</p>
-          <strong>Du mardi au dimanche</strong>
-          <span>Horaires à venir</span>
+          {scheduleGroups.length ? scheduleGroups.map((group) => (
+            <div key={`${group.days[0]}-${group.hours}`} className="ambassade-footer__schedule">
+              <strong>{formatContactDayRange(group.days)}</strong>
+              <span>{group.hours}</span>
+            </div>
+          )) : <span>Horaires à venir</span>}
         </div>
       </div>
 

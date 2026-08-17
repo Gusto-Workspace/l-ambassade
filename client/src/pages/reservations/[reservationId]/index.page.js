@@ -9,7 +9,7 @@ export default function ReservationResumePage({ reservationId }) {
         title="Suivi de réservation - L’Ambassade"
         description="Consultez le suivi de votre réservation à L’Ambassade."
         path={reservationId ? `/reservations/${reservationId}` : "/reservations"}
-        image="/img/home/header.png"
+        image="/img/home/header.webp"
         noIndex={true}
       />
 

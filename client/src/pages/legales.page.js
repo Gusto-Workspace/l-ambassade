@@ -17,8 +17,8 @@ const sections = [
 
 export default function LegalesPage({ seoRestaurantData = null }) {
   return <>
-    <SeoHeadComponent title="Mentions légales | L’Ambassade" description="Mentions légales du site L’Ambassade." path="/legales" image="/img/home/header.png" restaurantData={seoRestaurantData} />
-    <main className="ambassade-inner-page"><NavComponent /><InnerPageHeroComponent image="/img/home/header.png" title="Mentions légales" tagline="Informations, cadre & usage." />
+    <SeoHeadComponent title="Mentions légales | L’Ambassade" description="Mentions légales du site L’Ambassade." path="/legales" image="/img/home/header.webp" restaurantData={seoRestaurantData} />
+    <main className="ambassade-inner-page"><NavComponent /><InnerPageHeroComponent image="/img/home/header.webp" title="Mentions légales" tagline="Informations, cadre & usage." />
       <section className="ambassade-legal"><p className="ambassade-legal__intro">Les informations administratives, techniques et juridiques liées au site.</p>{sections.map(([title, body]) => <article key={title}><h2>{title}</h2><p>{body}</p></article>)}</section>
       <ReservationHomeSection dark title="On vous garde une table ?" buttonLabel="Réserver" />
     </main><FooterComponent />

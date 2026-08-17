@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { GlobalContext } from "@/contexts/global.context";
 import NavComponent from "@/components/_shared/nav/nav.component";
 import FooterComponent from "@/components/_shared/footer/footer.component";
 import InnerPageHeroComponent from "@/components/_shared/inner-page-hero/inner-page-hero.component";
@@ -7,6 +8,7 @@ import SeoHeadComponent from "@/components/_shared/seo/seo-head.component";
 import { buildStaticPageProps } from "@/_assets/utils/page-props.utils";
 
 export default function NewsPage({ seoRestaurantData = null }) {
+  const { restaurantContext } = useContext(GlobalContext);
   const heroRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
 
@@ -27,7 +29,7 @@ export default function NewsPage({ seoRestaurantData = null }) {
         title="Actualités | L’Ambassade"
         description="Les rendez-vous et les nouveautés de L’Ambassade."
         path="/news"
-        image="/img/news/header.jpg"
+        image="/img/news/header.webp"
         breadcrumbs={[
           { name: "Accueil", path: "/" },
           { name: "Actualités", path: "/news" },
@@ -39,12 +41,12 @@ export default function NewsPage({ seoRestaurantData = null }) {
         <main>
           <InnerPageHeroComponent
             heroRef={heroRef}
-            image="/img/news/header.jpg"
+            image="/img/news/header.webp"
             imagePosition="center 60%"
             title="Actualités"
             tagline="À table, au jardin, au fil des saisons."
           />
-          <ListNewsComponent />
+          <ListNewsComponent restaurantData={restaurantContext?.restaurantData} dataLoading={restaurantContext?.dataLoading} />
         </main>
         <FooterComponent />
       </div>

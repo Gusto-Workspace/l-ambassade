@@ -7,7 +7,7 @@ export default function EveningHomeSection() {
       <div className="ambassade-container ambassade-evening__layout">
         <RevealOnScrollComponent variant="left" className="ambassade-evening__media site-media-zoom">
           <Image
-            src="/img/home/la-nuit.png"
+            src="/img/home/la-nuit.webp"
             alt="Verres et planche à partager dans le jardin en soirée"
             fill
             sizes="(max-width: 767px) 100vw, 50vw"

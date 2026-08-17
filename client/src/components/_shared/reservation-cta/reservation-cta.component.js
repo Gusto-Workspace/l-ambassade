@@ -36,7 +36,7 @@ export default function ReservationCtaComponent({
     >
       <div className="absolute inset-0">
         <Image
-          src="/img/home/header.png"
+          src="/img/home/header.webp"
           alt=""
           fill
           sizes="100vw"

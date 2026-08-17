@@ -26,7 +26,7 @@ export default function TableeHomeSection() {
 
         <RevealOnScrollComponent variant="right" className="ambassade-tablee__media site-media-zoom">
           <Image
-            src="/img/home/la-tablee.jpg"
+            src="/img/home/la-tablee.webp"
             alt="Grande table dressée dans la verrière de L’Ambassade"
             fill
             sizes="(max-width: 767px) 100vw, 58vw"

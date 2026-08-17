@@ -23,7 +23,7 @@ export default function CuisineHomeSection() {
 
         <RevealOnScrollComponent variant="soft" className="ambassade-cuisine__media site-media-zoom">
           <Image
-            src="/img/home/le-feu.jpg"
+            src="/img/home/le-feu.webp"
             alt="Assiette de saison servie au bord de la piscine"
             fill
             sizes="(max-width: 767px) 100vw, 58vw"

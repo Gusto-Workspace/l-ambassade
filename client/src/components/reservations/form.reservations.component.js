@@ -620,7 +620,7 @@ export default function FormReservationComponent({
           <RevealOnScrollComponent className="flex items-center justify-center gap-3 text-center">
             <div className="relative h-6 w-10 rotate-[215deg]">
               <Image
-                src="/img/_shared/logo-bg-white.png"
+                src="/img/_shared/logo-bg-white.webp"
                 alt=""
                 fill
                 sizes="40px"
@@ -632,7 +632,7 @@ export default function FormReservationComponent({
             </h2>
             <div className="relative h-6 w-10 rotate-[30deg]">
               <Image
-                src="/img/_shared/logo-bg-white.png"
+                src="/img/_shared/logo-bg-white.webp"
                 alt=""
                 fill
                 sizes="40px"

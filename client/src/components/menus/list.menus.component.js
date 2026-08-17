@@ -166,7 +166,7 @@ export default function ListMenusComponent() {
 
       <RevealOnScrollComponent className="ambassade-menu-separator">
         <Image
-          src="/img/menu/separation.jpg"
+          src="/img/menu/separation.webp"
           alt="Brochettes de mortadelle servies à partager"
           fill
           sizes="100vw"

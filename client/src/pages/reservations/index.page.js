@@ -26,10 +26,10 @@ export default function ReservationsPage({ seoRestaurantData = null }) {
     return () => observer.disconnect();
   }, []);
   return <>
-    <SeoHeadComponent title="Réserver | L’Ambassade" description="Réservez votre table à L’Ambassade à Montauban." path="/reservations" image="/img/reservations/header.jpg" restaurantData={seoRestaurantData} />
+    <SeoHeadComponent title="Réserver | L’Ambassade" description="Réservez votre table à L’Ambassade à Montauban." path="/reservations" image="/img/reservations/header.webp" restaurantData={seoRestaurantData} />
     <main className="ambassade-inner-page">
       <NavComponent scrolled={scrolled} />
-      <InnerPageHeroComponent heroRef={heroRef} image="/img/reservations/header.jpg" imagePosition="center 48%" title="Réserver une table" tagline="Choisissez votre moment, nous nous occupons du reste." />
+      <InnerPageHeroComponent heroRef={heroRef} image="/img/reservations/header.webp" imagePosition="center 48%" title="Réserver une table" tagline="Choisissez votre moment, nous nous occupons du reste." />
       <AmbassadeBookingComponent apiBaseUrl={process.env.NEXT_PUBLIC_API_URL} restaurant={restaurantContext.restaurantData} dataLoading={restaurantContext.dataLoading} />
       <section className="ambassade-booking-notes">
         <BookingNote icon={Users} title="Groupes">Pour les tables de plus de 10 personnes, contactez-nous directement.</BookingNote>
@@ -37,7 +37,7 @@ export default function ReservationsPage({ seoRestaurantData = null }) {
         <BookingNote icon={Clock3} title="Retard">En cas de retard, pensez à prévenir notre équipe.</BookingNote>
       </section>
       <section className="ambassade-booking-discover">
-        <div><Image src="/img/reservations/discover.jpg" alt="Le jardin et la piscine de L’Ambassade" fill sizes="(max-width: 767px) 100vw, 52vw" className="object-cover" /></div>
+        <div><Image src="/img/reservations/discover.webp" alt="Le jardin et la piscine de L’Ambassade" fill sizes="(max-width: 767px) 100vw, 52vw" className="object-cover" /></div>
         <article><h2 className="ambassade-display">Une table, un jardin,<br />et le temps de rester.</h2><p>Déjeuner sous la verrière, dîner dans le jardin ou prolonger la soirée autour d’un verre : choisissez simplement votre moment.</p><Link href="/" className="ambassade-button ambassade-button--outline">Découvrir le lieu →</Link></article>
       </section>
       <section className="ambassade-booking-question"><MessageCircle size={50} strokeWidth={1.15} /><div><h2 className="ambassade-display">Une question avant de réserver ?</h2><p>Notre équipe reste à votre disposition.</p><Link href="/contact" className="ambassade-button ambassade-button--light">Nous contacter</Link></div></section>

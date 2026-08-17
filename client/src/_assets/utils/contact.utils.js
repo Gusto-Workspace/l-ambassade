@@ -189,6 +189,28 @@ export function buildContactSchedules(restaurant) {
   }));
 }
 
+export function groupContactSchedules(scheduleItems) {
+  const usableItems = (scheduleItems || []).filter(
+    (item) => item?.hours && item.hours !== "-" && item.hours !== "Fermé",
+  );
+
+  return usableItems.reduce((groups, item) => {
+    const lastGroup = groups[groups.length - 1];
+    if (lastGroup && lastGroup.hours === item.hours) {
+      lastGroup.days.push(item.day);
+    } else {
+      groups.push({ days: [item.day], hours: item.hours });
+    }
+    return groups;
+  }, []);
+}
+
+export function formatContactDayRange(days = []) {
+  if (!days.length) return "";
+  if (days.length === 1) return days[0];
+  return `${days[0]} – ${days[days.length - 1]}`;
+}
+
 export function getMapEmbedSrc(restaurant) {
   const address = formatAddress(restaurant?.address);
   const query = address || normalizeText(restaurant?.name);

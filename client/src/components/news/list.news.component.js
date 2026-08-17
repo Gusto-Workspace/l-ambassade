@@ -1,155 +1,83 @@
-import Image from "next/image";
 import { useEffect, useState } from "react";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, Loader2, X } from "lucide-react";
 import RevealOnScrollComponent from "../_shared/motion/reveal-on-scroll.component";
 import EditorialHeadingComponent from "../_shared/editorial-heading/editorial-heading.component";
 import ReservationHomeSection from "../home/sections/reservation.home.section";
+import { formatNewsDate, getVisibleNews } from "@/_assets/utils/news.utils";
 
-const fakeNews = [
-  {
-    id: "summer-menu",
-    category: "À table",
-    date: "12 août 2026",
-    title: "La carte prend des couleurs d’été.",
-    excerpt:
-      "Une cuisine vivante, des produits de saison et de nouvelles assiettes imaginées pour être partagées.",
-    body:
-      "La carte estivale s’installe à L’Ambassade. Elle fait la part belle aux produits frais, aux assiettes généreuses et aux cuissons qui accompagnent les longues journées dans le jardin.",
-    image: "/img/home/le-jardin.jpg",
-  },
-  {
-    id: "garden-evenings",
-    category: "Au jardin",
-    date: "7 août 2026",
-    title: "Les soirées du jardin.",
-    excerpt:
-      "Chaque vendredi, les grandes tablées se prolongent sous les arbres, entre cuisine, musique et lumière douce.",
-    body:
-      "À la tombée du jour, le jardin change de rythme. Les tables se rapprochent, les planches se partagent et la soirée se poursuit autour d’un verre.",
-    image: "/img/reservations/discover.jpg",
-    dark: true,
-  },
-  {
-    id: "one-more-drink",
-    category: "La soirée",
-    date: "24 juillet 2026",
-    title: "Un verre, une table, et le temps de rester.",
-    excerpt:
-      "Le bar lounge accompagne les fins de journée et les moments partagés.",
-    body:
-      "Cocktails, vins et assiettes à partager composent une soirée sans programme imposé : simplement le plaisir de rester un peu plus longtemps.",
-    image: "/img/news/header.jpg",
-  },
-];
+const fallbackLabels = ["À table", "Au jardin", "La soirée", "L’Ambassade"];
 
-function NewsButton({ onClick, children = "En savoir plus" }) {
-  return (
-    <button type="button" onClick={onClick} className="ambassade-news-link">
-      {children} <ArrowRight size={20} strokeWidth={1.4} />
-    </button>
-  );
+function stripHtml(value) {
+  return String(value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-export default function ListNewsComponent() {
+function newsLabel(item, index) {
+  return String(item?.label || item?.category || item?.tag || item?.type || fallbackLabels[index % fallbackLabels.length]);
+}
+
+function newsImage(item, fallback = "/img/news/header.webp") {
+  return String(item?.image || fallback);
+}
+
+function NewsButton({ onClick, children = "En savoir plus" }) {
+  return <button type="button" onClick={onClick} className="ambassade-news-link">{children}<ArrowRight size={20} strokeWidth={1.4} /></button>;
+}
+
+export default function ListNewsComponent({ restaurantData, dataLoading = false }) {
   const [selected, setSelected] = useState(null);
+  const visibleNews = getVisibleNews(restaurantData);
+  const previousNews = visibleNews.slice(1);
 
   useEffect(() => {
     if (!selected) return undefined;
-    const previous = document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
     return () => {
-      document.body.style.overflow = previous;
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
     };
   }, [selected]);
 
-  return (
-    <>
-      <section className="ambassade-news-page">
-        <EditorialHeadingComponent
-          title="Les nouvelles de L’Ambassade."
-          description="Découvrez les rendez-vous, les nouveautés et les histoires qui font vivre la maison."
-        />
+  return <>
+    <section className="ambassade-news-page">
+      <EditorialHeadingComponent title="Les nouvelles de L’Ambassade." description="Découvrez les rendez-vous, les nouveautés et les histoires qui font vivre la maison." />
 
-        <div className="ambassade-news-feed">
-          <RevealOnScrollComponent className="ambassade-news-feature">
-            <div className="ambassade-news-feature__media">
-              <Image
-                src={fakeNews[0].image}
-                alt="La verrière de L’Ambassade"
-                fill
-                sizes="(max-width: 767px) 100vw, 58vw"
-                className="object-cover object-center"
-              />
-            </div>
-            <div className="ambassade-news-copy">
-              <p className="ambassade-news-meta">{fakeNews[0].category}</p>
-              <time>{fakeNews[0].date}</time>
-              <h2 className="ambassade-display">{fakeNews[0].title}</h2>
-              <p>{fakeNews[0].excerpt}</p>
-              <NewsButton onClick={() => setSelected(fakeNews[0])}>Lire l’actualité</NewsButton>
-            </div>
-          </RevealOnScrollComponent>
+      {dataLoading ? <div className="ambassade-news-state"><Loader2 className="animate-spin" /><p>Chargement des actualités…</p></div> : null}
+      {!dataLoading && !visibleNews.length ? <div className="ambassade-news-state"><p>Aucune actualité n’est publiée pour le moment.</p></div> : null}
 
+      {!dataLoading && visibleNews.length ? <div className="ambassade-news-feed">
+        <RevealOnScrollComponent className="ambassade-news-feature">
+          <div className="ambassade-news-feature__media"><img src={newsImage(visibleNews[0])} alt={visibleNews[0].title || "Actualité de L’Ambassade"} /></div>
+          <NewsCopy item={visibleNews[0]} index={0} onOpen={() => setSelected(visibleNews[0])} lead />
+        </RevealOnScrollComponent>
+
+        {visibleNews.length > 1 ? <>
           <EditorialHeadingComponent title="Les actualités précédentes." />
-
           <div className="ambassade-news-previous">
-            {fakeNews.slice(1).map((item, index) => (
-              <RevealOnScrollComponent
-                key={item.id}
-                className={`ambassade-news-row${item.dark ? " ambassade-news-row--dark" : ""}`}
-              >
-                <div className="ambassade-news-copy">
-                  <p className="ambassade-news-meta">{item.category}</p>
-                  <time>{item.date}</time>
-                  <h2 className="ambassade-display">{item.title}</h2>
-                  <p>{item.excerpt}</p>
-                  <NewsButton onClick={() => setSelected(item)} />
-                </div>
-                <div className="ambassade-news-row__media">
-                  <Image
-                    src={item.image}
-                    alt=""
-                    fill
-                    sizes="(max-width: 767px) 100vw, 55vw"
-                    className="object-cover object-center"
-                  />
-                </div>
-              </RevealOnScrollComponent>
-            ))}
+            {previousNews.map((item, index) => <RevealOnScrollComponent key={item._id || `${item.title}-${index}`} className={`ambassade-news-row${index % 2 === 0 ? " ambassade-news-row--dark" : ""}`}>
+              <NewsCopy item={item} index={index + 1} onOpen={() => setSelected(item)} />
+              <div className="ambassade-news-row__media"><img src={newsImage(item)} alt={item.title || "Actualité de L’Ambassade"} /></div>
+            </RevealOnScrollComponent>)}
           </div>
+        </> : null}
 
-          <div className="ambassade-news-all">
-            <EditorialHeadingComponent emblem title="Toutes les actualités" />
-            <button type="button" className="ambassade-button ambassade-button--outline">
-              Voir les publications précédentes
-            </button>
-          </div>
-        </div>
-      </section>
+      </div> : null}
+    </section>
 
-      <ReservationHomeSection title="On vous garde une table ?" buttonLabel="Réserver" dark />
+    <ReservationHomeSection title="On vous garde une table ?" buttonLabel="Réserver" dark />
 
-      {selected ? (
-        <div className="ambassade-news-modal" role="dialog" aria-modal="true" aria-labelledby="news-modal-title">
-          <button
-            type="button"
-            className="ambassade-news-modal__backdrop"
-            onClick={() => setSelected(null)}
-            aria-label="Fermer"
-          />
-          <article>
-            <button type="button" onClick={() => setSelected(null)} aria-label="Fermer l’actualité">
-              <X size={24} />
-            </button>
-            <p className="ambassade-news-meta">{selected.category} · {selected.date}</p>
-            <h2 id="news-modal-title" className="ambassade-display">{selected.title}</h2>
-            <div className="ambassade-news-modal__image">
-              <Image src={selected.image} alt="" fill sizes="800px" className="object-cover" />
-            </div>
-            <p>{selected.body}</p>
-          </article>
-        </div>
-      ) : null}
-    </>
-  );
+    {selected ? <div className="ambassade-news-modal" role="dialog" aria-modal="true" aria-labelledby="news-modal-title">
+      <button type="button" className="ambassade-news-modal__backdrop" onClick={() => setSelected(null)} aria-label="Fermer" />
+      <article><button type="button" onClick={() => setSelected(null)} aria-label="Fermer l’actualité"><X size={24} /></button><p className="ambassade-news-meta">{newsLabel(selected, 0)} · {formatNewsDate(selected.published_at) || "Actualité"}</p><h2 id="news-modal-title" className="ambassade-display">{selected.title}</h2><div className="ambassade-news-modal__image"><img src={newsImage(selected)} alt={selected.title || "Actualité de L’Ambassade"} /></div>{selected.description ? <div className="ambassade-news-modal__body" dangerouslySetInnerHTML={{ __html: selected.description }} /> : null}</article>
+    </div> : null}
+  </>;
+}
+
+function NewsCopy({ item, index, onOpen, lead = false }) {
+  const plainDescription = stripHtml(item.description);
+  const excerpt = plainDescription.length > 180 ? `${plainDescription.slice(0, 180).trim()}…` : plainDescription;
+  return <div className="ambassade-news-copy"><p className="ambassade-news-meta">{newsLabel(item, index)}</p><time>{formatNewsDate(item.published_at) || "Actualité"}</time><h2 className="ambassade-display">{item.title}</h2>{excerpt ? <p>{excerpt}</p> : null}<NewsButton onClick={onOpen}>{lead ? "Lire l’actualité" : "En savoir plus"}</NewsButton></div>;
 }

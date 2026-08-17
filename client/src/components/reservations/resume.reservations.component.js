@@ -1,81 +1,39 @@
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { Loader2, RotateCcw, TriangleAlert } from "lucide-react";
 
-export default function ResumeReservationsComponent({
-  apiBaseUrl,
-  reservationId,
-}) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const confirmedStatuses = new Set(["Pending", "Confirmed", "Active", "Late", "Finished"]);
+
+export default function ResumeReservationsComponent({ apiBaseUrl, reservationId }) {
+  const router = useRouter();
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!router.isReady || !reservationId) return;
-
+    if (!router.isReady || !reservationId || !apiBaseUrl) return;
     async function resume() {
       try {
-        const res = await fetch(
-          `${apiBaseUrl}/reservations/${reservationId}/bank-hold/retry`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              baseUrl: window.location.origin,
-            }),
-          },
-        );
+        const response = await fetch(`${apiBaseUrl}/reservations/${reservationId}/bank-hold/retry`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ baseUrl: window.location.origin }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (response.ok && payload.url) { window.location.href = payload.url; return; }
 
-        const data = await res.json().catch(() => ({}));
-
-        if (!res.ok) {
-          if (
-            res.status === 404 ||
-            String(data?.message || "").includes("expiré") ||
-            String(data?.message || "").includes("ne nécessite plus")
-          ) {
-            localStorage.removeItem("gm_pending_bank_hold");
-          }
-
-          throw new Error(
-            data?.message || "Impossible de relancer la validation.",
-          );
+        const statusResponse = await fetch(`${apiBaseUrl}/reservations/${reservationId}`);
+        const statusPayload = await statusResponse.json().catch(() => ({}));
+        const status = statusPayload?.reservation?.status;
+        if (statusResponse.ok && confirmedStatuses.has(status)) {
+          localStorage.removeItem("gm_pending_bank_hold");
+          await router.replace(`/reservations?confirmation=${encodeURIComponent(reservationId)}&bankHold=success`);
+          return;
         }
-
-        window.location.href = data.url;
-      } catch (e) {
-        setError(e.message || "Impossible de relancer la validation.");
-      } finally {
-        setLoading(false);
-      }
+        if (["Canceled", "Rejected", "NoShow"].includes(status)) localStorage.removeItem("gm_pending_bank_hold");
+        throw new Error(payload.message || "La validation ne peut plus être relancée.");
+      } catch (resumeError) { setError(resumeError.message || "Impossible de relancer la validation."); }
     }
-
     resume();
-  }, [reservationId, apiBaseUrl]);
+  }, [apiBaseUrl, reservationId, router.isReady]);
 
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center px-4">
-        <div className="w-full max-w-[640px] rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
-          <h1 className="text-2xl font-semibold">Chargement</h1>
-          <p className="mt-4 text-black/70">
-            Redirection vers la validation de la carte...
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-screen flex items-center justify-center px-4">
-        <div className="w-full max-w-[640px] rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
-          <h1 className="text-2xl font-semibold">Erreur</h1>
-          <p className="mt-4 text-black/70">{error}</p>
-        </div>
-      </main>
-    );
-  }
-
-  return null;
+  if (error) return <div className="ambassade-flow-status ambassade-flow-status--error"><TriangleAlert size={42} strokeWidth={1.2} /><h2>Validation indisponible</h2><p>{error}</p><div className="ambassade-flow-actions"><Link href="/reservations">Nouvelle réservation</Link><Link href="/contact">Nous contacter</Link></div></div>;
+  return <div className="ambassade-flow-status"><RotateCcw size={42} strokeWidth={1.2} /><h2>Reprise de votre réservation</h2><p>Nous vérifions son statut avant de vous rediriger vers l’étape nécessaire.</p><Loader2 className="animate-spin" /></div>;
 }

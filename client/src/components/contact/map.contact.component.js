@@ -44,7 +44,7 @@ export default function MapContactComponent() {
                   <div className="absolute left-[52%] top-[45%] flex h-[92px] w-[92px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[999px] bg-[var(--site-orange-deep)] shadow-[0_18px_40px_rgba(20,72,47,0.34)]">
                     <div className="relative h-[52px] w-[42px]">
                       <Image
-                        src="/img/_shared/logo-bg-black.png"
+                        src="/img/_shared/logo-bg-black.webp"
                         alt="L’Ambassade"
                         fill
                         sizes="42px"
@@ -72,7 +72,7 @@ export default function MapContactComponent() {
             </h2>
             <div className="relative h-6 w-10 rotate-[30deg]">
               <Image
-                src="/img/_shared/logo-bg-white.png"
+                src="/img/_shared/logo-bg-white.webp"
                 alt=""
                 fill
                 sizes="40px"
@@ -105,7 +105,7 @@ export default function MapContactComponent() {
         <div className="grid desktop:grid-cols-[1fr_2fr]">
           <div className="relative min-h-[280px] desktop:min-h-[360px]">
               <Image
-                src="/img/home/la-tablee.jpg"
+                src="/img/home/la-tablee.webp"
                 alt="Groupes et événements à L’Ambassade"
                 fill
                 sizes="(min-width: 1024px) 33vw, 100vw"
@@ -154,7 +154,7 @@ export default function MapContactComponent() {
 
               <div className="pointer-events-none absolute bottom-7 right-7 hidden h-16 w-16 desktop:block">
                 <Image
-                  src="/img/home/leaf.png"
+                  src="/img/home/leaf.webp"
                   alt=""
                   fill
                   sizes="64px"
