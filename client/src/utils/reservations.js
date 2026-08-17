@@ -1,5 +1,8 @@
 import { format } from "date-fns";
 
+const DINNER_START_MINUTES = 17 * 60;
+const NIGHT_SERVICE_END_MINUTES = 6 * 60;
+
 export function getReservationParameters(restaurant) {
   return (
     restaurant?.reservationsSettings ||
@@ -108,8 +111,10 @@ export function isToday(date) {
 }
 
 export function getServiceBucketFromTime(reservationTime) {
-  const [hour = "0"] = String(reservationTime || "00:00").split(":");
-  return Number(hour) < 16 ? "lunch" : "dinner";
+  const minutes = minutesFromHHmm(reservationTime);
+  return minutes >= DINNER_START_MINUTES || minutes < NIGHT_SERVICE_END_MINUTES
+    ? "dinner"
+    : "lunch";
 }
 
 export function getOccupancyMinutes(parameters, reservationTime) {
@@ -131,7 +136,7 @@ export function buildReservationDateTime(reservationDate, reservationTime) {
     .split(":")
     .map(Number);
 
-  return new Date(
+  const reservationDateTime = new Date(
     parsedDate.getFullYear(),
     parsedDate.getMonth(),
     parsedDate.getDate(),
@@ -140,6 +145,13 @@ export function buildReservationDateTime(reservationDate, reservationTime) {
     0,
     0,
   );
+
+  // Les créneaux après minuit appartiennent au service du soir sélectionné.
+  if (hour * 60 + minute < NIGHT_SERVICE_END_MINUTES) {
+    reservationDateTime.setDate(reservationDateTime.getDate() + 1);
+  }
+
+  return reservationDateTime;
 }
 
 function isBlockedRangeOverlapping({ range, candidateStart, candidateEnd }) {
@@ -309,6 +321,11 @@ export function minutesFromHHmm(timeStr) {
   return (Number(hour) || 0) * 60 + (Number(minute) || 0);
 }
 
+function minutesFromServiceTime(timeStr) {
+  const minutes = minutesFromHHmm(timeStr);
+  return minutes < NIGHT_SERVICE_END_MINUTES ? minutes + 24 * 60 : minutes;
+}
+
 export function isBlockingReservation(reservation) {
   if (!reservation) return false;
 
@@ -386,13 +403,17 @@ export function generateTimeOptions(openTime, closeTime, interval) {
     .split(":")
     .map(Number);
   const start = openHour * 60 + openMinute;
-  const end = closeHour * 60 + closeMinute;
+  let end = closeHour * 60 + closeMinute;
   const step = parseInt(String(interval), 10);
 
   if (Number.isNaN(step) || step <= 0) return times;
 
+  // Une fermeture antérieure à l'ouverture (19:30–02:00, par exemple)
+  // désigne un service qui se poursuit après minuit.
+  if (end < start) end += 24 * 60;
+
   for (let minutes = start; minutes <= end; minutes += step) {
-    const hour = String(Math.floor(minutes / 60)).padStart(2, "0");
+    const hour = String(Math.floor((minutes % (24 * 60)) / 60)).padStart(2, "0");
     const minute = String(minutes % 60).padStart(2, "0");
     times.push(`${hour}:${minute}`);
   }
@@ -438,8 +459,7 @@ export function getAvailableReservationTimes({
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     times = times.filter((time) => {
-      const [hour, minute] = time.split(":").map(Number);
-      return hour * 60 + minute > currentMinutes;
+      return minutesFromServiceTime(time) > currentMinutes;
     });
   }
 
@@ -490,7 +510,7 @@ export function getAvailableReservationTimes({
   });
 
   return times.filter((time) => {
-    const candidateStart = minutesFromHHmm(time);
+    const candidateStart = minutesFromServiceTime(time);
     const candidateDuration = getOccupancyMinutes(parameters, time);
     const candidateEnd = candidateStart + candidateDuration;
     const candidateDurationMs = Math.max(1, candidateDuration * 60 * 1000);
@@ -532,7 +552,7 @@ export function getAvailableReservationTimes({
         0,
         5,
       );
-      const reservationStart = minutesFromHHmm(reservationTime);
+      const reservationStart = minutesFromServiceTime(reservationTime);
       const reservationDuration = getOccupancyMinutes(
         parameters,
         reservationTime,
@@ -591,8 +611,7 @@ export function getReservationTimeOptions({
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     candidateTimes = candidateTimes.filter((time) => {
-      const [hour, minute] = time.split(":").map(Number);
-      return hour * 60 + minute > currentMinutes;
+      return minutesFromServiceTime(time) > currentMinutes;
     });
   }
 

@@ -7,6 +7,7 @@ import { fr } from "date-fns/locale";
 import { CalendarDays, Check, Clock3, CreditCard, Loader2, MapPin, Minus, Plus, TriangleAlert, Users } from "lucide-react";
 import {
   formatReservationDateForApi,
+  getServiceBucketFromTime,
   getReservationTimeOptions,
   isReservationDateClosed,
 } from "@/utils/reservations";
@@ -153,8 +154,7 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
   }, [date, guests, restaurant, reservations, slotCoverUsage]);
 
   const visibleTimes = timeOptions.filter((option) => {
-    const hour = Number(String(option.time).split(":")[0]);
-    return meal === "lunch" ? hour < 17 : hour >= 17;
+    return getServiceBucketFromTime(option.time) === meal;
   });
 
   useEffect(() => {

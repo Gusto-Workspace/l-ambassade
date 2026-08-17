@@ -78,12 +78,11 @@
 /* Carte */
 .ambassade-menu-page { padding-top: 55px; }
 .ambassade-menu-tabs { display: flex; justify-content: center; gap: clamp(24px, 5vw, 72px); margin-top: 45px; border-block: 1px solid rgba(145,70,39,.16); padding: 21px 24px; }
-.ambassade-menu-tabs a, .ambassade-menu-sidebar a { font-family: var(--font-bodoni-moda), Didot, serif; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
+.ambassade-menu-tabs a { font-family: var(--font-bodoni-moda), Didot, serif; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
 .ambassade-menu-tabs a:first-child { color: var(--color-copper-dark); text-decoration: underline; text-underline-offset: 9px; }
-.ambassade-menu-shell { display: grid; width: min(100% - 48px, 1240px); grid-template-columns: 170px 1fr; gap: 48px; margin: 42px auto 55px; }
-.ambassade-menu-shell--continuation { grid-template-columns: 1fr; margin-top: 50px; }
-.ambassade-menu-sidebar { display: flex; align-self: start; flex-direction: column; gap: 21px; border-right: 1px solid var(--color-copper); padding: 12px 30px 120px 0; }
-.ambassade-menu-sidebar a:first-child { color: var(--color-copper-dark); text-decoration: underline; text-underline-offset: 8px; }
+.ambassade-menu-shell { display: block; width: min(100% - 48px, 1240px); margin: 42px auto 55px; }
+.ambassade-menu-shell--continuation { margin-top: 50px; }
+.ambassade-menu-block[id] { scroll-margin-top: 128px; }
 .ambassade-menu-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 62px; }
 .ambassade-menu-columns > * + * { border-left: 1px solid var(--color-copper); padding-left: 34px; }
 .ambassade-menu-columns--bottom { grid-template-columns: repeat(3, minmax(0,1fr)); margin-top: 48px; border-top: 1px solid var(--color-copper); padding-top: 38px; gap: 30px; }
@@ -204,8 +203,8 @@
   .ambassade-subhero__tagline { max-width:330px; font-size:15px; line-height:1.45; }
   .ambassade-menu-tabs { justify-content:flex-start; overflow-x:auto; }
   .ambassade-menu-tabs a { flex:0 0 auto; }
-  .ambassade-menu-shell { display:block; width:calc(100% - 40px); }
-  .ambassade-menu-sidebar { display:none; }
+  .ambassade-menu-shell { width:calc(100% - 40px); }
+  .ambassade-menu-block[id] { scroll-margin-top: 106px; }
   .ambassade-menu-columns,.ambassade-menu-columns--bottom { grid-template-columns:1fr; gap:48px; }
   .ambassade-menu-columns > * + * { border-top:1px solid var(--color-copper); border-left:0; padding-top:42px; padding-left:0; }
   .ambassade-menu-columns--bottom { border-top:0; padding-top:0; }

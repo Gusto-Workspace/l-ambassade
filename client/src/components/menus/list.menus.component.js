@@ -129,14 +129,6 @@ export default function ListMenusComponent() {
       </nav>
 
       <div className="ambassade-menu-shell">
-        <aside className="ambassade-menu-sidebar">
-          {sections.map((section) => (
-            <a key={section.id} href={`#${section.id}`}>
-              {section.label}
-            </a>
-          ))}
-        </aside>
-
         <div className="ambassade-menu-content">
           <div className="ambassade-menu-columns ambassade-menu-columns--top">
             <RevealOnScrollComponent id="tablee" className="ambassade-menu-block">
