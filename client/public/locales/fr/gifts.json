@@ -1,0 +1,12 @@
+{
+  "titles": {
+    "main": "Les cartes cadeaux",
+    "value": "Cartes cadeaux - Valeur",
+    "menus": "Cartes cadeaux - Menus"
+  },
+  "descriptions": {
+    "main": "Offrez une expérience inoubliable grâce à nos cartes cadeaux. Que ce soit pour un anniversaire, une occasion spéciale ou simplement pour faire plaisir, laissez vos proches savourer des moments uniques dans notre restaurant",
+    "value": "Donnez accès à une totale liberté de choix grâce à nos cartes cadeaux avec une valeur fixe. Idéal pour permettre à vos proches de déguster les plats de leur choix dans notre restaurant",
+    "menus": "Partagez un moment gourmand en offrant nos cartes cadeaux proposant des menus du restaurant. Une expérience conviviale à partager autour de nos plats signature"
+  }
+}

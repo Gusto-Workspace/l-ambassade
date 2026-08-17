@@ -1,0 +1,31 @@
+{
+  "titles": {
+    "main": "Contact"
+  },
+  "description": "Contact us for any questions or reservations, and let us guide you through a unique culinary experience. Our team is here to assist you and make your visit to La Coquille truly special.",
+  "form": {
+    "labels": {
+      "name": "First Name & Last Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "message": "Message ..."
+    },
+    "buttons": {
+      "send": "Send",
+      "loading": "Loading ...",
+      "sent": "Sent !"
+    }
+  },
+  "hours": {
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+    "close": "Closed"
+  }
+}

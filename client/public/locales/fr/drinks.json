@@ -1,0 +1,14 @@
+{
+  "titles": {
+    "main": "Les vins & boissons"
+  },
+  "description": "Découvrez notre sélection de vins et boissons, soigneusement choisie pour accompagner vos repas. Des grands crus aux cocktails raffinés, en passant par des jus et boissons sans alcool, chaque option est pensée pour répondre à toutes vos envies. Laissez-vous guider et savourez un moment d'exception",
+  "wines": {
+    "title": "Les vins",
+    "description": "Découvrez notre sélection de vins soigneusement choisis pour sublimer chaque plat. Des grands crus aux cépages locaux, chaque bouteille raconte une histoire et invite à un moment de dégustation unique"
+  },
+  "drinks": {
+    "title": "Les boissons",
+    "description": "Rafraîchissez-vous avec notre variété de boissons, allant des cocktails élégants aux jus frais et pétillants. Une sélection pensée pour accompagner tous vos moments de plaisir"
+  }
+}

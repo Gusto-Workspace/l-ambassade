@@ -1,0 +1,12 @@
+{
+  "titles": {
+    "main": "La carte"
+  },
+  "description": "Découvrez une sélection raffinée de plats, soigneusement élaborés pour sublimer les saveurs des produits locaux et de saison. À La Coquille, chaque proposition à la carte reflète notre passion pour la gastronomie bretonne et notre engagement envers une cuisine authentique",
+  "types": {
+    "bio": "Bio",
+    "vegan": "Végan",
+    "vegetarian": "Végétarien",
+    "gluttenFree": "Sans gluten"
+  }
+}

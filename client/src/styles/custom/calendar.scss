@@ -1,0 +1,104 @@
+.reservation-calendar.react-calendar {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+}
+
+.reservation-calendar .react-calendar__navigation {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+
+.reservation-calendar .react-calendar__navigation button {
+  min-width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgba(29, 99, 63, 0.18);
+  background: rgba(255, 252, 247, 0.98);
+  color: var(--site-ink);
+  font-size: 16px;
+  font-weight: 600;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.reservation-calendar .react-calendar__navigation button:hover {
+  border-color: rgba(29, 99, 63, 0.45);
+  background: rgba(29, 99, 63, 0.08);
+  color: var(--site-orange-deep);
+  transform: translateY(-1px);
+}
+
+.reservation-calendar .react-calendar__navigation__label {
+  flex-grow: 1 !important;
+  font-family: var(--font-cormorant-garamond), serif;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--site-orange-deep);
+}
+
+.reservation-calendar .react-calendar__month-view__weekdays {
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: rgba(19, 24, 20, 0.48);
+}
+
+.reservation-calendar .react-calendar__month-view__weekdays__weekday {
+  padding: 10px 0;
+  text-align: center;
+}
+
+.reservation-calendar .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+.reservation-calendar .react-calendar__month-view__days {
+  gap: 6px 0;
+}
+
+.reservation-calendar .react-calendar__tile {
+  height: 58px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--site-ink);
+  font-size: 16px;
+  font-weight: 500;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.reservation-calendar .react-calendar__tile:hover {
+  border-color: rgba(29, 99, 63, 0.22);
+  background: rgba(29, 99, 63, 0.08);
+  color: var(--site-orange-deep);
+}
+
+.reservation-calendar .react-calendar__tile--active {
+  border-color: var(--site-orange) !important;
+  background: var(--site-orange) !important;
+  color: white !important;
+}
+
+.reservation-calendar .react-calendar__tile--now {
+  background: rgba(29, 99, 63, 0.1);
+  border-color: rgba(29, 99, 63, 0.2);
+}
+
+.reservation-calendar .react-calendar__tile:disabled {
+  opacity: 0.34;
+  background: transparent;
+  color: var(--site-ink);
+}

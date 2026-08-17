@@ -1,0 +1,14 @@
+{
+  "titles": {
+    "main": "Wines & Beverages"
+  },
+  "description": "Explore our selection of wines and beverages, carefully chosen to complement your meals. From fine wines to exquisite cocktails, as well as fresh juices and non-alcoholic drinks, every option is designed to cater to your desires. Let yourself be guided and enjoy a moment of exception.",
+  "wines": {
+    "title": "Wines",
+    "description": "Discover our selection of wines carefully chosen to enhance every dish. From fine vintages to local grape varieties, each bottle tells a story and invites you to a unique tasting experience."
+  },
+  "drinks": {
+    "title": "Drinks",
+    "description": "Refresh yourself with our variety of beverages, ranging from elegant cocktails to fresh and sparkling juices. A selection designed to accompany all your moments of enjoyment."
+  }
+}
