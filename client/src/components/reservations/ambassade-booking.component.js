@@ -22,7 +22,7 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
   const [date, setDate] = useState(new Date());
   const [guests, setGuests] = useState(2);
   const [time, setTime] = useState("");
-  const [meal, setMeal] = useState("dinner");
+  const [meal, setMeal] = useState("lunch");
   const [customer, setCustomer] = useState(emptyCustomer);
   const [reservations, setReservations] = useState([]);
   const [slotCoverUsage, setSlotCoverUsage] = useState([]);
