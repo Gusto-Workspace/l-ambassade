@@ -29,8 +29,10 @@ export default function EveningHomeSection() {
             place à la soirée.
           </p>
           <p className="ambassade-hover-description">
-            À la nuit tombée, le jardin change de rythme : un verre, quelques
-            assiettes et le plaisir de rester.
+            À la nuit tombée, L’Ambassade devient un bar à cocktails animé par
+            des DJ sets, où l’on vient aussi pour danser. La soirée est ouverte
+            à tous, sans réservation et sans être client du restaurant. Tenue
+            correcte exigée.
           </p>
         </RevealOnScrollComponent>
       </div>

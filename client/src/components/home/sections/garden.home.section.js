@@ -34,7 +34,8 @@ export default function GardenHomeSection() {
           </p>
           <p className="ambassade-hover-description">
             À l’abri de la verrière ou au bord de la piscine, le jardin accompagne
-            les déjeuners qui s’attardent.
+            les déjeuners qui s’attardent, les verres partagés et les parenthèses
+            au calme tout au long des beaux jours.
           </p>
         </RevealOnScrollComponent>
       </div>

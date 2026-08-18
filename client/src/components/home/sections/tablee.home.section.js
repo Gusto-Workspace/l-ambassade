@@ -20,7 +20,8 @@ export default function TableeHomeSection() {
           </p>
           <p className="ambassade-hover-description">
             Des assiettes généreuses à poser au centre, pour goûter, partager et
-            laisser la conversation durer.
+            laisser la conversation durer. Une cuisine de partage pensée pour les
+            grandes tablées comme pour les repas à deux.
           </p>
         </RevealOnScrollComponent>
 

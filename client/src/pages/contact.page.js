@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Clock3, Mail, MapPin, Phone, Users } from "lucide-react";
+import { CarFront, Clock3, Mail, MapPin, Phone, Users } from "lucide-react";
 import { GlobalContext } from "@/contexts/global.context";
 import NavComponent from "@/components/_shared/nav/nav.component";
 import FooterComponent from "@/components/_shared/footer/footer.component";
@@ -54,6 +54,7 @@ export default function ContactPage({ seoRestaurantData = null }) {
           <aside className="ambassade-contact-card">
             <h2 className="ambassade-contact-small-title">Nous trouver</h2>
             <ContactLine icon={MapPin} title="L’Ambassade" text={address?.value} />
+            <ContactLine icon={CarFront} title="Grand parking" text="Un grand parking est disponible sur place pour faciliter votre venue." />
             <ContactLine icon={Phone} title="Nous appeler" href={phone?.href} text={phone?.value} />
             <ContactLine icon={Mail} title="Nous écrire" href={email?.href} text={email?.value} />
             <ContactLine icon={Clock3} title="Horaires">
