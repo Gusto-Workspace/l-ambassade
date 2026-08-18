@@ -56,23 +56,36 @@ function isMenuLikeText(value) {
 
 function isMenuLikeCategory(category) {
   return (
-    isMenuLikeText(category?.name) ||
-    isMenuLikeText(category?.description)
+    isMenuLikeText(category?.name) || isMenuLikeText(category?.description)
   );
 }
 
 function mapDishCategory(category, categoryIndex) {
-  return {
-    id: category?._id || `${category?.name || "category"}-${categoryIndex}`,
-    title: normalizeText(category?.name) || "Suggestion",
-    description: normalizeText(category?.description),
-    items: (category?.dishes || [])
+  const mapDishes = (dishes = []) =>
+    dishes
       .filter((dish) => dish?.showOnWebsite)
       .map((dish, itemIndex) => ({
         id: dish?._id || `${dish?.name || "dish"}-${itemIndex}`,
         name: normalizeText(dish?.name) || "Plat",
         description: normalizeText(dish?.description),
         price: formatEuroPrice(dish?.price),
+      }));
+
+  return {
+    id: category?._id || `${category?.name || "category"}-${categoryIndex}`,
+    title: normalizeText(category?.name) || "Suggestion",
+    description: normalizeText(category?.description),
+    items: mapDishes(category?.dishes),
+    subCategories: (category?.subCategories || [])
+      .filter(
+        (subCategory) =>
+          subCategory?.visible !== false &&
+          (subCategory?.dishes || []).some((dish) => dish?.showOnWebsite),
+      )
+      .map((subCategory, subCategoryIndex) => ({
+        id: subCategory?._id || `subcategory-${subCategoryIndex}`,
+        title: normalizeText(subCategory?.name) || "Suggestion",
+        items: mapDishes(subCategory?.dishes),
       })),
   };
 }
@@ -83,11 +96,19 @@ export function getVisibleDishCategories(restaurantData) {
       (category) =>
         category?.visible &&
         !isMenuLikeCategory(category) &&
-        Array.isArray(category?.dishes) &&
-        category.dishes.some((dish) => dish?.showOnWebsite),
+        ((category?.dishes || []).some((dish) => dish?.showOnWebsite) ||
+          (category?.subCategories || []).some(
+            (subCategory) =>
+              subCategory?.visible !== false &&
+              (subCategory?.dishes || []).some((dish) => dish?.showOnWebsite),
+          )),
     )
     .map(mapDishCategory)
-    .filter((category) => category.title && category.items.length > 0);
+    .filter(
+      (category) =>
+        category.title &&
+        (category.items.length > 0 || category.subCategories.length > 0),
+    );
 }
 
 export function getVisibleMenuCategories(restaurantData) {
@@ -96,11 +117,19 @@ export function getVisibleMenuCategories(restaurantData) {
       (category) =>
         category?.visible &&
         isMenuLikeCategory(category) &&
-        Array.isArray(category?.dishes) &&
-        category.dishes.some((dish) => dish?.showOnWebsite),
+        ((category?.dishes || []).some((dish) => dish?.showOnWebsite) ||
+          (category?.subCategories || []).some(
+            (subCategory) =>
+              subCategory?.visible !== false &&
+              (subCategory?.dishes || []).some((dish) => dish?.showOnWebsite),
+          )),
     )
     .map(mapDishCategory)
-    .filter((category) => category.title && category.items.length > 0);
+    .filter(
+      (category) =>
+        category.title &&
+        (category.items.length > 0 || category.subCategories.length > 0),
+    );
 }
 
 export function getHomeMenuPreview(restaurantData, options = {}) {
@@ -110,7 +139,17 @@ export function getHomeMenuPreview(restaurantData, options = {}) {
     .slice(0, limitCategories)
     .map((category) => ({
       ...category,
-      items: category.items.slice(0, limitItems),
+      items: [
+        ...category.items,
+        ...(category.subCategories || []).flatMap((subCategory) => [
+          {
+            id: `subcategory-${subCategory.id}`,
+            name: subCategory.title,
+            isSubCategoryHeading: true,
+          },
+          ...subCategory.items,
+        ]),
+      ].slice(0, limitItems),
     }));
 }
 

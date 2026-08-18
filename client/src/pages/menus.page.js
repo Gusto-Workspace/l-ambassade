@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import NavComponent from "@/components/_shared/nav/nav.component";
 import FooterComponent from "@/components/_shared/footer/footer.component";
 import InnerPageHeroComponent from "@/components/_shared/inner-page-hero/inner-page-hero.component";
@@ -6,8 +6,10 @@ import ListMenusComponent from "@/components/menus/list.menus.component";
 import ReservationHomeSection from "@/components/home/sections/reservation.home.section";
 import SeoHeadComponent from "@/components/_shared/seo/seo-head.component";
 import { buildStaticPageProps } from "@/_assets/utils/page-props.utils";
+import { GlobalContext } from "@/contexts/global.context";
 
 export default function MenusPage({ seoRestaurantData = null }) {
+  const { restaurantContext } = useContext(GlobalContext);
   const heroRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
 
@@ -48,7 +50,9 @@ export default function MenusPage({ seoRestaurantData = null }) {
             actionLabel="Découvrir la carte"
             actionHref="#menu-content"
           />
-          <ListMenusComponent />
+          <ListMenusComponent
+            restaurantData={restaurantContext?.restaurantData}
+          />
           <ReservationHomeSection />
         </main>
         <FooterComponent />
