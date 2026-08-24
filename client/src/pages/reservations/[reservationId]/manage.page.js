@@ -2,12 +2,12 @@ import ManageReservationsComponent from "@/components/reservations/manage.reserv
 import ReservationFlowShell from "@/components/reservations/reservation-flow-shell.component";
 import SeoHeadComponent from "@/components/_shared/seo/seo-head.component";
 
-export default function ReservationManagePage({ reservationId }) {
+export default function ReservationManagePage({ reservationId, manageToken }) {
   return (
     <>
       <SeoHeadComponent
-        title="Annuler ma réservation - L’Ambassade"
-        description="Consultez votre réservation à L’Ambassade et annulez-la en ligne si nécessaire."
+        title="Gérer ma réservation - L’Ambassade"
+        description="Consultez et modifiez votre réservation à L’Ambassade, ou annulez-la en ligne si nécessaire."
         path={
           reservationId
             ? `/reservations/${reservationId}/manage`
@@ -22,8 +22,9 @@ export default function ReservationManagePage({ reservationId }) {
         title="Votre réservation"
       >
         <ManageReservationsComponent
-          reservationId={reservationId}
-          apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+        reservationId={reservationId}
+        manageToken={manageToken}
+        apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
         />
       </ReservationFlowShell>
     </>
@@ -32,10 +33,12 @@ export default function ReservationManagePage({ reservationId }) {
 
 export async function getServerSideProps(context) {
   const { reservationId } = context.params;
+  const manageToken = String(context.query?.token || "").trim();
 
   return {
     props: {
       reservationId: reservationId || null,
+      manageToken,
     },
   };
 }

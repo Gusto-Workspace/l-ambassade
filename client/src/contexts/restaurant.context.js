@@ -6,14 +6,16 @@ import axios from "axios";
 export default function RestaurantContext() {
   const [restaurantData, setRestaurantData] = useState(null);
 
-  const [dataLoading, setDataLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [dataError, setDataError] = useState(null);
 
   function fetchRestaurantData() {
     setDataLoading(true);
+    setDataError(null);
 
     axios
       .get(
-        `${process.env.NEXT_PUBLIC_API_URL}/restaurants/${process.env.NEXT_PUBLIC_RESTAURANT_ID}`
+        `${process.env.NEXT_PUBLIC_API_URL}/restaurants/${process.env.NEXT_PUBLIC_RESTAURANT_ID}`,
       )
       .then((response) => {
         setRestaurantData(response.data.restaurant);
@@ -21,9 +23,10 @@ export default function RestaurantContext() {
         setDataLoading(false);
       })
       .catch((error) => {
+        setDataError(error);
         console.error(
           "Erreur lors de la récupération des données du restaurant:",
-          error
+          error,
         );
         setDataLoading(false);
       });
@@ -37,6 +40,7 @@ export default function RestaurantContext() {
     restaurantData,
     setRestaurantData,
     dataLoading,
+    dataError,
     fetchRestaurantData,
   };
 }

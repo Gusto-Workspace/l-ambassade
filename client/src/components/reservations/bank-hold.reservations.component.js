@@ -18,6 +18,7 @@ function BankHoldForm({ apiBaseUrl, reservationId, intentType, flow, amountTotal
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+  const [reservationStatus, setReservationStatus] = useState("");
 
   async function finalizeIntent(nextIntentType, intentId) {
     const response = await fetch(`${apiBaseUrl}/reservations/${reservationId}/bank-hold/finalize-public`, {
@@ -26,6 +27,7 @@ function BankHoldForm({ apiBaseUrl, reservationId, intentType, flow, amountTotal
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.message || "La validation n’a pas pu être finalisée.");
     localStorage.removeItem("gm_pending_bank_hold");
+    setReservationStatus(String(payload?.reservation?.status || ""));
     setSuccess(true);
   }
 
@@ -70,7 +72,7 @@ function BankHoldForm({ apiBaseUrl, reservationId, intentType, flow, amountTotal
     } finally { setLoading(false); }
   }
 
-  if (success) return <Status icon={Check} tone="success" title="Réservation validée"><p>Votre empreinte bancaire a bien été validée. Vous allez retrouver la confirmation de votre réservation.</p><Loader2 className="animate-spin" /></Status>;
+  if (success) return <Status icon={Check} tone="success" title="Réservation validée"><p>Votre empreinte bancaire a bien été validée. Vous allez retrouver la confirmation de votre réservation.</p><p>{reservationStatus === "Pending" ? "Votre demande est en attente de confirmation. Dès qu’elle sera confirmée, vous pourrez la modifier ou l’annuler en contactant directement le restaurant ou en utilisant le lien présent dans l’e-mail de confirmation." : "Votre réservation est confirmée. Pour la modifier ou l’annuler, contactez directement le restaurant ou utilisez le lien présent dans l’e-mail de confirmation."}</p><Loader2 className="animate-spin" /></Status>;
 
   return (
     <form onSubmit={handleSubmit} className="ambassade-bank-form">

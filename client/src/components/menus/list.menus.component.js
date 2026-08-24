@@ -11,11 +11,17 @@ import {
   isMenuSeparatorLabel,
 } from "@/_assets/utils/menu-display.utils";
 
-function MenuList({ items }) {
+function MenuList({ items, continuation = false }) {
   return (
-    <div className="ambassade-menu-list">
+    <div
+      className={`ambassade-menu-list ${continuation ? "ambassade-menu-list--continuation" : ""}`}
+    >
       {items.map((item) => (
-        <article key={item.id || item.name} className="ambassade-menu-item">
+        <article
+          key={item.id || item.name}
+          className="ambassade-menu-item"
+          data-print-dish
+        >
           <div>
             <h3>{item.name}</h3>
             {item.description ? <p>{item.description}</p> : null}
@@ -29,7 +35,10 @@ function MenuList({ items }) {
 
 function MenuTitle({ children }) {
   return (
-    <div className="ambassade-menu-title ambassade-menu-title--copper">
+    <div
+      className="ambassade-menu-title ambassade-menu-title--copper"
+      data-print-category-title
+    >
       <h2 className="ambassade-display">{children}</h2>
       <span aria-hidden="true">✦</span>
     </div>
@@ -73,20 +82,32 @@ function buildRows(items, size = 2) {
 }
 
 function CategoryBlock({ block, index }) {
+  const firstDishGroup = block.items.slice(0, 2);
+  const remainingItems = block.items.slice(2);
+
   return (
     <RevealOnScrollComponent
+      data-print-menu
       id={block.id}
       variant={index % 2 ? "right" : "up"}
       className="ambassade-menu-block"
     >
-      {block.parentTitle ? (
-        <p className="ambassade-menu-parent-label">{block.parentTitle}</p>
+      <div
+        className="ambassade-menu-block__lead"
+        data-print-category-first-chunk
+      >
+        {block.parentTitle ? (
+          <p className="ambassade-menu-parent-label">{block.parentTitle}</p>
+        ) : null}
+        <MenuTitle>{block.title}</MenuTitle>
+        {block.description ? (
+          <p className="ambassade-menu-intro">{block.description}</p>
+        ) : null}
+        <MenuList items={firstDishGroup} />
+      </div>
+      {remainingItems.length ? (
+        <MenuList items={remainingItems} continuation />
       ) : null}
-      <MenuTitle>{block.title}</MenuTitle>
-      {block.description ? (
-        <p className="ambassade-menu-intro">{block.description}</p>
-      ) : null}
-      <MenuList items={block.items} />
     </RevealOnScrollComponent>
   );
 }
@@ -101,9 +122,11 @@ function MenuOffer({ menu, index }) {
       delay={index * 80}
       className="ambassade-menu-offer"
     >
-      <div className="ambassade-menu-offer__heading">
-        <MenuTitle>{getMenuTitle(menu, index)}</MenuTitle>
-        {price ? <strong>{price}</strong> : null}
+      <div className="ambassade-menu-offer__heading" data-print-title-price-row>
+        <div data-print-title>
+          <MenuTitle>{getMenuTitle(menu, index)}</MenuTitle>
+        </div>
+        {price ? <strong data-print-price>{price}</strong> : null}
       </div>
       {menu.description ? (
         <p className="ambassade-menu-intro">{menu.description}</p>
@@ -136,7 +159,10 @@ function MenuOffer({ menu, index }) {
   );
 }
 
-export default function ListMenusComponent({ restaurantData }) {
+export default function ListMenusComponent({
+  restaurantData,
+  printMode = false,
+}) {
   const categories = getVisibleDishCategories(restaurantData);
   const categoryBlocks = buildCategoryBlocks(categories);
   const [firstRow = [], ...remainingRows] = buildRows(categoryBlocks);
@@ -154,7 +180,7 @@ export default function ListMenusComponent({ restaurantData }) {
         description="Notre carte évolue au fil des produits, des rencontres et de l’inspiration de la Cheffe."
       />
 
-      {navigationItems.length > 0 ? (
+      {!printMode && navigationItems.length > 0 ? (
         <nav
           className="ambassade-menu-tabs"
           aria-label="Catégories de la carte"
@@ -179,16 +205,18 @@ export default function ListMenusComponent({ restaurantData }) {
             </div>
           </div>
 
-          <RevealOnScrollComponent className="ambassade-menu-separator">
-            <Image
-              src="/img/menu/separation.webp"
-              alt="Cuisine de L’Ambassade"
-              fill
-              sizes="100vw"
-              className="object-cover object-[center_62%]"
-            />
-            <span>La cuisine de L’Ambassade&nbsp;&nbsp; ✦</span>
-          </RevealOnScrollComponent>
+          {!printMode ? (
+            <RevealOnScrollComponent className="ambassade-menu-separator">
+              <Image
+                src="/img/menu/separation.webp"
+                alt="Cuisine de L’Ambassade"
+                fill
+                sizes="100vw"
+                className="object-cover object-[center_62%]"
+              />
+              <span>La cuisine de L’Ambassade&nbsp;&nbsp; ✦</span>
+            </RevealOnScrollComponent>
+          ) : null}
 
           {remainingRows.length > 0 ? (
             <div className="ambassade-menu-shell ambassade-menu-shell--continuation">

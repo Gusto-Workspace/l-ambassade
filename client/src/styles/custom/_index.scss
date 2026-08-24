@@ -99,6 +99,7 @@
 .ambassade-menu-title span { display: block; width: 150px; margin-top: 12px; border-top: 1px solid currentColor; padding-top: 5px; text-align: center; }
 .ambassade-menu-intro { margin: 14px 0 25px; font-family: var(--font-bodoni-moda), Didot, serif; font-size: 16px; text-transform: uppercase; }
 .ambassade-menu-list { display: flex; flex-direction: column; gap: 22px; }
+.ambassade-menu-list--continuation { margin-top: 22px; }
 .ambassade-menu-item { display: grid; grid-template-columns: 1fr auto; gap: 18px; }
 .ambassade-menu-item h3 { margin: 0; font-family: var(--font-bodoni-moda), Didot, serif; font-size: 19px; font-weight: 500; line-height: 1.1; }
 .ambassade-menu-item p { margin: 3px 0 0; font-size: 11px; line-height: 1.25; }
@@ -680,19 +681,11 @@ a {
   align-items: flex-end;
   justify-content: center;
   gap: 5px;
-  border-top: 1px solid var(--color-copper);
+
   color: var(--color-copper);
 }
 
-.ambassade-column-emblem::before,
-.ambassade-column-emblem::after {
-  position: absolute;
-  top: -5px;
-  width: 16px;
-  height: 10px;
-  border-top: 1px solid currentColor;
-  content: "";
-}
+
 
 .ambassade-column-emblem::before {
   left: 2px;
@@ -2875,6 +2868,74 @@ a {
 .ambassade-manage__confirm-actions button { display: flex; min-height: 46px; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--color-copper); background: var(--color-copper); color: white; font-size: 10px; font-weight: 600; text-transform: uppercase; }
 .ambassade-manage__confirm-actions button:last-child { background: transparent; color: var(--color-copper-dark); }
 .ambassade-manage__confirm-actions button:disabled { cursor: wait; opacity: .55; }
+.ambassade-edit-availability__card {
+  border: 1px solid rgba(216,197,182,.75);
+  background: rgba(255,253,248,.62);
+  padding: 16px;
+}
+.ambassade-edit-availability__field-label,
+.ambassade-edit-availability__eyebrow {
+  color: var(--color-copper-dark);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.ambassade-edit-availability__guest-select {
+  border: 1px solid var(--color-copper);
+  background: rgba(255,253,248,.8);
+  padding: 0 14px;
+  color: var(--color-text);
+  font-size: 14px;
+  outline: none;
+}
+.ambassade-edit-availability__guest-select:focus { box-shadow: 0 0 0 3px rgba(184,97,53,.12); }
+.ambassade-edit-availability__title {
+  color: var(--color-text);
+  font-family: var(--font-bodoni-moda), Didot, serif;
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+.ambassade-edit-availability__calendar .react-calendar {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-bodoni-moda), Didot, serif;
+}
+.ambassade-edit-availability__calendar .react-calendar__navigation { height: 42px; margin-bottom: 4px; }
+.ambassade-edit-availability__calendar .react-calendar__navigation button { background: transparent !important; font-family: var(--font-bodoni-moda), Didot, serif; font-size: 18px; text-transform: uppercase; }
+.ambassade-edit-availability__calendar .react-calendar__month-view__weekdays { font-family: var(--font-montserrat), Arial, sans-serif; font-size: 9px; text-decoration: none; }
+.ambassade-edit-availability__calendar .react-calendar__month-view__weekdays abbr { text-decoration: none; }
+.ambassade-edit-availability__calendar .react-calendar__tile { height: 42px; background: transparent; font-size: 14px; }
+.ambassade-edit-availability__calendar .react-calendar__tile:enabled:hover { background: rgba(184,97,53,.09); }
+.ambassade-edit-availability__calendar .react-calendar__tile--active,
+.ambassade-edit-availability__calendar .react-calendar__tile--active:enabled:hover { border-radius: 50%; background: var(--color-copper); color: white; }
+.ambassade-edit-availability__calendar .react-calendar__month-view__days__day--neighboringMonth { color: rgba(39,37,33,.3); }
+.ambassade-edit-availability__time {
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid var(--color-line);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-bodoni-moda), Didot, serif;
+  font-size: 14px;
+}
+.ambassade-edit-availability__time:hover,
+.ambassade-edit-availability__time.is-active { border-color: var(--color-copper); }
+.ambassade-edit-availability__time.is-active { background: var(--color-copper); color: white; }
+.ambassade-edit-availability__empty,
+.ambassade-edit-availability__helper { color: var(--color-muted); font-size: 11px; line-height: 1.7; }
+.ambassade-manage__edit-form { margin-top: 22px; border: 1px solid rgba(216,197,182,.75); background: rgba(250,247,243,.7); padding: 18px; text-align: left; }
+.ambassade-manage__edit-form > p { margin: 0 0 15px; color: var(--color-copper-dark); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.ambassade-manage__edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ambassade-manage__edit-form label { display: block; color: var(--color-muted); font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.ambassade-manage__edit-form label + label { margin-top: 13px; }
+.ambassade-manage__edit-form input { display: block; width: 100%; margin-top: 6px; border: 1px solid rgba(216,197,182,.9); background: white; padding: 11px; color: var(--color-ink); font-size: 14px; font-weight: 400; letter-spacing: normal; text-transform: none; }
+.ambassade-manage__edit-form small { display: block; margin-top: 13px; color: var(--color-muted); font-size: 11px; line-height: 1.6; text-transform: none; }
+.ambassade-manage__edit-form button:disabled { cursor: wait; opacity: .55; }
+.ambassade-manage__edit-actions { margin-top: 22px; }
+.ambassade-manage__edit-actions button { width: 100%; }
 .ambassade-manage__contact { margin: 28px 0 0; color: var(--color-muted); font-size: 11px; line-height: 1.7; text-align: center; }
 .ambassade-manage__contact a { border-bottom: 1px solid var(--color-copper); color: var(--color-copper-dark); }
 
@@ -2893,6 +2954,7 @@ a {
   .ambassade-manage__details > div + div { border-top: 1px solid var(--color-line); border-left: 0; }
   .ambassade-manage__identity { grid-template-columns: 1fr; }
   .ambassade-manage__confirm-actions { grid-template-columns: 1fr; }
+  .ambassade-manage__edit-grid { grid-template-columns: 1fr; }
 }
 
 .ambassade-pending-modal {

@@ -32,6 +32,7 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
   const [returnLoading, setReturnLoading] = useState(false);
   const [returnIssue, setReturnIssue] = useState("");
   const [handledReturn, setHandledReturn] = useState(false);
+  const [confirmationStatus, setConfirmationStatus] = useState("");
   const [pendingBankHold, setPendingBankHold] = useState(null);
   const [cancelingPendingBankHold, setCancelingPendingBankHold] = useState(false);
   const [pendingBankHoldError, setPendingBankHoldError] = useState("");
@@ -113,6 +114,7 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
         if (!response.ok || !payload?.reservation) throw new Error(payload.message || "Impossible de vérifier la réservation.");
         const returned = payload.reservation;
         if (["Pending", "Confirmed", "Active", "Late", "Finished"].includes(returned.status)) {
+          setConfirmationStatus(String(returned.status || ""));
           const returnedDate = new Date(returned.reservationDate);
           if (!Number.isNaN(returnedDate.getTime())) setDate(returnedDate);
           setGuests(Number(returned.numberOfGuests) || 2);
@@ -235,6 +237,11 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
         window.location.href = payload.redirectUrl;
         return;
       }
+      setConfirmationStatus(
+        Boolean(restaurant?.reservationsSettings?.auto_accept)
+          ? "Confirmed"
+          : "Pending",
+      );
       setStep(3);
       await loadReservations();
     } catch (submitError) {
@@ -306,7 +313,7 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
             <div className="ambassade-customer-form__actions"><button type="button" onClick={() => setStep(1)}>Modifier le créneau</button><button type="submit" disabled={submitting}>{submitting ? "Envoi…" : "Confirmer la réservation"}</button></div>
           </form> : null}
 
-          {step === 3 ? <div className="ambassade-booking-confirmation"><Check size={55} strokeWidth={1.2} /><h3 className="ambassade-display">Votre réservation est confirmée.</h3><p>La validation est terminée. Un e-mail récapitulatif vous a été envoyé et nous avons hâte de vous accueillir.</p><button type="button" className="ambassade-button ambassade-button--outline" onClick={() => { setStep(1); setTime(""); setCustomer(emptyCustomer); setReturnIssue(""); router.replace("/reservations", undefined, { shallow: true }); }}>Nouvelle réservation</button></div> : null}
+          {step === 3 ? <div className="ambassade-booking-confirmation"><Check size={55} strokeWidth={1.2} /><h3 className="ambassade-display">{confirmationStatus === "Pending" ? "Votre demande est en attente de confirmation." : "Votre réservation est confirmée."}</h3><p>{confirmationStatus === "Pending" ? "Nous avons bien reçu votre demande. Dès qu’elle sera confirmée, vous pourrez la modifier ou l’annuler en contactant directement le restaurant ou en utilisant le lien présent dans l’e-mail de confirmation." : "La validation est terminée. Pour modifier ou annuler votre réservation, contactez directement le restaurant ou utilisez le lien présent dans l’e-mail de confirmation."}</p><button type="button" className="ambassade-button ambassade-button--outline" onClick={() => { setStep(1); setTime(""); setCustomer(emptyCustomer); setReturnIssue(""); setConfirmationStatus(""); router.replace("/reservations", undefined, { shallow: true }); }}>Nouvelle réservation</button></div> : null}
         </div>
 
         <aside className="ambassade-booking-summary">

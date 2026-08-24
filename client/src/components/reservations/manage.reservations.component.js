@@ -17,9 +17,10 @@ import {
 
 import { GlobalContext } from "@/contexts/global.context";
 import { buildContactInfos } from "@/_assets/utils/contact.utils";
+import EditReservationAvailability from "@/components/reservations/edit-availability.reservations.component";
 import { parseReservationDateValue } from "@/utils/reservations";
 
-export default function ManageReservationsComponent({ reservationId, apiBaseUrl }) {
+export default function ManageReservationsComponent({ reservationId, manageToken, apiBaseUrl }) {
   const { restaurantContext } = useContext(GlobalContext);
   const restaurant = restaurantContext?.restaurantData;
   const restaurantLoading = restaurantContext?.dataLoading;
@@ -30,7 +31,10 @@ export default function ManageReservationsComponent({ reservationId, apiBaseUrl 
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCanceling, setIsCanceling] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({ reservationDate: "", reservationTime: "", numberOfGuests: "" });
 
   const contactInfos = useMemo(() => buildContactInfos(restaurant), [restaurant]);
   const phoneInfo = contactInfos.find((item) => item.key === "phone");
@@ -47,7 +51,7 @@ export default function ManageReservationsComponent({ reservationId, apiBaseUrl 
   );
 
   const fetchReservation = useCallback(async () => {
-    if (!reservationId || !apiBaseUrl) {
+    if (!reservationId || !manageToken || !apiBaseUrl) {
       setLoadError("Ce lien de réservation est invalide.");
       setIsLoading(false);
       return;
@@ -56,7 +60,7 @@ export default function ManageReservationsComponent({ reservationId, apiBaseUrl 
     try {
       setIsLoading(true);
       setLoadError("");
-      const response = await fetch(`${apiBaseUrl}/reservations/${reservationId}`);
+      const response = await fetch(buildManageApiUrl(`${apiBaseUrl}/reservations/${reservationId}`, manageToken));
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload?.reservation) {
         throw new Error(
@@ -74,7 +78,7 @@ export default function ManageReservationsComponent({ reservationId, apiBaseUrl 
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, reservationId]);
+  }, [apiBaseUrl, manageToken, reservationId]);
 
   useEffect(() => {
     fetchReservation();
@@ -86,7 +90,7 @@ export default function ManageReservationsComponent({ reservationId, apiBaseUrl 
       setIsCanceling(true);
       setActionError("");
       setSuccessMessage("");
-      const response = await fetch(`${apiBaseUrl}/reservations/${reservation._id}/cancel`, {
+      const response = await fetch(buildManageApiUrl(`${apiBaseUrl}/reservations/${reservation._id}/cancel`, manageToken), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -111,6 +115,55 @@ export default function ManageReservationsComponent({ reservationId, apiBaseUrl 
     }
   }
 
+  function startEditingReservation() {
+    setEditData({
+      reservationDate: getReservationEditDate(reservation?.reservationDate),
+      reservationTime: String(reservation?.reservationTime || "").slice(0, 5),
+      numberOfGuests: String(reservation?.numberOfGuests || ""),
+    });
+    setShowCancelConfirm(false);
+    setActionError("");
+    setSuccessMessage("");
+    setIsEditing(true);
+  }
+
+  async function handleUpdateReservation(event) {
+    event.preventDefault();
+    if (!reservation?._id || !apiBaseUrl) return;
+    if (!editData.reservationDate || !editData.reservationTime || !editData.numberOfGuests) {
+      setActionError("Choisissez une date, un horaire et un nombre de convives.");
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      setActionError("");
+      setSuccessMessage("");
+      const response = await fetch(buildManageApiUrl(`${apiBaseUrl}/reservations/${reservation._id}`, manageToken), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editData),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(getReservationApiErrorMessage({
+          payload,
+          status: response.status,
+          fallbackMessage: "Impossible de modifier la réservation.",
+        }));
+      }
+      setReservation(payload.reservation || reservation);
+      setManagement(payload.management || null);
+      setIsEditing(false);
+      setShowCancelConfirm(false);
+      setSuccessMessage(payload.message || "Votre réservation a bien été modifiée.");
+    } catch (updateError) {
+      setActionError(updateError?.message || "Impossible de modifier la réservation.");
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
   if (isLoading || (reservation && restaurantLoading)) {
     return <FlowStatus icon={Loader2} title="Chargement en cours" loading>Nous retrouvons le détail de votre réservation.</FlowStatus>;
   }
@@ -126,6 +179,7 @@ export default function ManageReservationsComponent({ reservationId, apiBaseUrl 
   const status = String(reservation?.status || "");
   const isAwaitingBankHold = status === "AwaitingBankHold" && management?.reasonCode !== "BANK_HOLD_EXPIRED";
   const isCanceled = status === "Canceled";
+  const canModify = management?.canModify === true && !restaurantMismatch;
   const canCancel = management?.canCancel === true && !restaurantMismatch;
 
   return (
@@ -165,16 +219,35 @@ export default function ManageReservationsComponent({ reservationId, apiBaseUrl 
       ) : null}
 
       {!isAwaitingBankHold && !isCanceled ? (
-        <ActionSection icon={TriangleAlert} title="Annuler cette réservation" description="L’annulation libère immédiatement votre table. Pour modifier la date, l’heure ou le nombre de convives, contactez directement le restaurant.">
+        <ActionSection icon={TriangleAlert} title="Modifier ou annuler cette réservation" description="Vous pouvez modifier la date, l’heure ou le nombre de convives depuis cette page. Pour toute demande particulière, contactez directement l’équipe du restaurant.">
           {actionError ? <Alert tone="error">{actionError}</Alert> : null}
-          {canCancel ? (
+          {successMessage ? <Alert tone="success">{successMessage}</Alert> : null}
+          {canModify || canCancel ? (
             <>
-              {!showCancelConfirm ? (
+              {canModify && isEditing ? (
+                <form onSubmit={handleUpdateReservation} className="ambassade-manage__edit-form">
+                  <p>Modifier la réservation</p>
+                  <EditReservationAvailability
+                    apiBaseUrl={apiBaseUrl}
+                    manageToken={manageToken}
+                    restaurant={restaurant}
+                    reservation={reservation}
+                    editData={editData}
+                    setEditData={setEditData}
+                  />
+                  <div className="ambassade-flow-actions ambassade-manage__edit-actions">
+                    <button type="submit" className="ambassade-button ambassade-button--copper" disabled={isUpdating}>{isUpdating ? "Enregistrement…" : "Enregistrer les modifications"}</button>
+                    <button type="button" className="ambassade-button ambassade-button--outline" onClick={() => setIsEditing(false)} disabled={isUpdating}>Annuler</button>
+                  </div>
+                </form>
+              ) : null}
+              {!isEditing ? (
                 <div className="ambassade-flow-actions">
-                  <button type="button" className="ambassade-flow-primary" onClick={() => setShowCancelConfirm(true)}>Annuler la réservation</button>
-                  <ActionLink href={contactHref}>Modifier ma venue</ActionLink>
+                  {canModify ? <button type="button" className="ambassade-flow-primary" onClick={startEditingReservation}>Modifier ma réservation</button> : null}
+                  {canCancel ? <button type="button" onClick={() => setShowCancelConfirm(true)}>Annuler la réservation</button> : null}
                 </div>
-              ) : (
+              ) : null}
+              {showCancelConfirm && canCancel ? (
                 <div className="ambassade-manage__confirm">
                   <p>Confirmez-vous l’annulation ? Cette action est immédiate.</p>
                   <div className="ambassade-manage__confirm-actions">
@@ -182,7 +255,7 @@ export default function ManageReservationsComponent({ reservationId, apiBaseUrl 
                     <button type="button" onClick={() => setShowCancelConfirm(false)} disabled={isCanceling}>Garder ma réservation</button>
                   </div>
                 </div>
-              )}
+              ) : null}
             </>
           ) : (
             <>
@@ -240,6 +313,16 @@ function getCustomerFullName(reservation) {
 function formatReservationDateLabel(value) {
   const parsedDate = parseReservationDateValue(value);
   return parsedDate ? format(parsedDate, "EEEE d MMMM yyyy", { locale: fr }) : value ? String(value) : "Date à confirmer";
+}
+
+function buildManageApiUrl(url, manageToken) {
+  const separator = String(url || "").includes("?") ? "&" : "?";
+  return `${url}${separator}token=${encodeURIComponent(manageToken || "")}`;
+}
+
+function getReservationEditDate(value) {
+  const parsedDate = parseReservationDateValue(value);
+  return parsedDate ? format(parsedDate, "yyyy-MM-dd") : "";
 }
 
 function formatTimeLabel(value) {

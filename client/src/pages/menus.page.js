@@ -7,11 +7,15 @@ import ReservationHomeSection from "@/components/home/sections/reservation.home.
 import SeoHeadComponent from "@/components/_shared/seo/seo-head.component";
 import { buildStaticPageProps } from "@/_assets/utils/page-props.utils";
 import { GlobalContext } from "@/contexts/global.context";
+import GustoPrintComponent, {
+  useGustoPrintMode,
+} from "@/components/_shared/gusto-print/gusto-print.component";
 
 export default function MenusPage({ seoRestaurantData = null }) {
   const { restaurantContext } = useContext(GlobalContext);
   const heroRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
+  const { printMode, autoPrint } = useGustoPrintMode();
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -23,6 +27,13 @@ export default function MenusPage({ seoRestaurantData = null }) {
     observer.observe(hero);
     return () => observer.disconnect();
   }, []);
+
+  const menuContent = (
+    <ListMenusComponent
+      restaurantData={restaurantContext?.restaurantData}
+      printMode={printMode}
+    />
+  );
 
   return (
     <>
@@ -38,25 +49,34 @@ export default function MenusPage({ seoRestaurantData = null }) {
         restaurantData={seoRestaurantData}
       />
 
-      <div className="ambassade-inner-page">
-        <NavComponent scrolled={scrolled} />
-        <main>
-          <InnerPageHeroComponent
-            heroRef={heroRef}
-            image="/img/menu/header.webp"
-            imagePosition="center 66%"
-            title="Carte & menus"
-            tagline="Une cuisine vivante, généreuse et faite sur place."
-            actionLabel="Découvrir la carte"
-            actionHref="#menu-content"
-          />
-          <ListMenusComponent
-            restaurantData={restaurantContext?.restaurantData}
-          />
-          <ReservationHomeSection />
-        </main>
-        <FooterComponent />
-      </div>
+      {printMode ? (
+        <GustoPrintComponent
+          autoPrint={autoPrint}
+          restaurant={restaurantContext?.restaurantData}
+          dataLoading={restaurantContext.dataLoading}
+          dataError={restaurantContext.dataError}
+        >
+          {menuContent}
+        </GustoPrintComponent>
+      ) : (
+        <div className="ambassade-inner-page">
+          <NavComponent scrolled={scrolled} />
+          <main>
+            <InnerPageHeroComponent
+              heroRef={heroRef}
+              image="/img/menu/header.webp"
+              imagePosition="center 66%"
+              title="Carte & menus"
+              tagline="Une cuisine vivante, généreuse et faite sur place."
+              actionLabel="Découvrir la carte"
+              actionHref="#menu-content"
+            />
+            {menuContent}
+            <ReservationHomeSection />
+          </main>
+          <FooterComponent />
+        </div>
+      )}
     </>
   );
 }

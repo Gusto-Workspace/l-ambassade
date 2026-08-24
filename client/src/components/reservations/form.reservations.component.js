@@ -883,7 +883,7 @@ export default function FormReservationComponent({
 
                 <div className="flex items-center justify-center gap-3 text-[16px] text-[var(--site-ink)]">
                   <Check size={20} strokeWidth={2.1} className="text-[var(--site-orange)]" />
-                  <p>Vous recevrez un email de confirmation.</p>
+                  <p>Vous recevrez un e-mail indiquant le statut de votre demande. Le lien de l’e-mail de confirmation permettra ensuite de modifier ou d’annuler votre réservation.</p>
                 </div>
               </form>
             ) : (

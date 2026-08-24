@@ -146,7 +146,6 @@ export function buildReservationDateTime(reservationDate, reservationTime) {
     0,
   );
 
-  // Les créneaux après minuit appartiennent au service du soir sélectionné.
   if (hour * 60 + minute < NIGHT_SERVICE_END_MINUTES) {
     reservationDateTime.setDate(reservationDateTime.getDate() + 1);
   }
@@ -163,21 +162,20 @@ function isBlockedRangeOverlapping({ range, candidateStart, candidateEnd }) {
   if (!Number.isFinite(rangeStart) || !Number.isFinite(rangeEnd)) return false;
 
   return (
-    candidateStart.getTime() <= rangeEnd && candidateEnd.getTime() > rangeStart
+    candidateStart.getTime() < rangeEnd && candidateEnd.getTime() > rangeStart
   );
 }
 
-export function isDateTimeBlocked(parameters, candidateDateTime, occupancyMs) {
+export function isDateTimeBlocked(parameters, candidateDateTime) {
   if (!(candidateDateTime instanceof Date)) return false;
   if (Number.isNaN(candidateDateTime.getTime())) return false;
+  // Une pause bloque le départ du créneau, pas sa durée d'occupation.
 
   const ranges = Array.isArray(parameters?.blocked_ranges)
     ? parameters.blocked_ranges
     : [];
   const candidateStart = new Date(candidateDateTime);
-  const candidateEnd = new Date(
-    candidateDateTime.getTime() + Math.max(1, Number(occupancyMs) || 0),
-  );
+  const candidateEnd = new Date(candidateDateTime.getTime() + 1);
 
   return ranges.some((range) =>
     isBlockedRangeOverlapping({
@@ -394,6 +392,226 @@ export function requiredTableSizeFromGuests(value) {
   return guests % 2 === 0 ? guests : guests + 1;
 }
 
+function normalizeTableIds(values = []) {
+  return Array.from(
+    new Set(
+      (Array.isArray(values) ? values : [])
+        .map((value) => String(value || "").trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function getEnabledCatalogTables(parameters = {}) {
+  const disabledIds = new Set();
+  const rooms = Array.isArray(parameters?.floorplan?.rooms)
+    ? parameters.floorplan.rooms
+    : [];
+
+  rooms.forEach((room) => {
+    if (room?.enabled !== false) return;
+    (Array.isArray(room?.objects) ? room.objects : []).forEach((object) => {
+      if (object?.type === "table" && object?.tableRefId) {
+        disabledIds.add(String(object.tableRefId));
+      }
+    });
+  });
+
+  const tables = Array.isArray(parameters?.tables) ? parameters.tables : [];
+  return tables.filter(
+    (table) => !disabledIds.has(String(table?._id || "").trim()),
+  );
+}
+
+function getReservationTableIds(table) {
+  const ids = normalizeTableIds(table?.tableIds);
+  if (ids.length) return ids;
+  return table?._id ? [String(table._id)] : [];
+}
+
+function getCombinedTableOptions(tables, requiredSeats) {
+  const byId = new Map(
+    tables.map((table) => [String(table?._id || "").trim(), table]),
+  );
+  const seen = new Set();
+  const options = [];
+
+  tables.forEach((table) => {
+    const tableId = String(table?._id || "").trim();
+    if (!tableId) return;
+
+    normalizeTableIds(table?.combinableWith).forEach((relatedId) => {
+      const other = byId.get(relatedId);
+      if (!other?._id || relatedId === tableId) return;
+      if (!normalizeTableIds(other.combinableWith).includes(tableId)) return;
+
+      const pairIds = [tableId, relatedId].sort();
+      const pairKey = pairIds.join("+");
+      if (seen.has(pairKey)) return;
+      seen.add(pairKey);
+
+      if (
+        Number(table?.seats || 0) + Number(other?.seats || 0) !==
+          requiredSeats ||
+        table?.onlineBookable === false ||
+        other?.onlineBookable === false
+      ) {
+        return;
+      }
+
+      options.push({
+        tableIds: pairIds,
+        name: `${String(table?.name || "")} + ${String(other?.name || "")}`,
+        seats: requiredSeats,
+      });
+    });
+  });
+
+  return options;
+}
+
+function isConfiguredTableOptionFree({
+  option,
+  blockingReservations,
+  overlaps,
+  blockedTableIds,
+}) {
+  const optionIds = getReservationTableIds(option);
+  if (!optionIds.length) return false;
+  if (optionIds.some((id) => blockedTableIds.has(id))) return false;
+
+  return !blockingReservations.some((reservation) => {
+    if (!reservation?.table || !overlaps(reservation)) return false;
+    const reservationIds = getReservationTableIds(reservation.table);
+    if (reservationIds.some((id) => optionIds.includes(id))) return true;
+    return (
+      reservationIds.length === 0 &&
+      String(reservation.table.name || "") === String(option.name || "")
+    );
+  });
+}
+
+function hasAvailableConfiguredTable({
+  parameters,
+  tablesCatalog,
+  dayReservations,
+  numberOfGuests,
+  candidateTime,
+  candidateDateTime,
+}) {
+  const requiredSeats = requiredTableSizeFromGuests(numberOfGuests);
+  const allowedSingleSeats =
+    Number(numberOfGuests) === 1 ? new Set([1, 2]) : new Set([requiredSeats]);
+  const singleOptions = tablesCatalog.filter(
+    (table) =>
+      allowedSingleSeats.has(Number(table?.seats || 0)) &&
+      table?.onlineBookable !== false,
+  );
+  const candidateDuration = getOccupancyMinutes(parameters, candidateTime);
+  const candidateStart = minutesFromServiceTime(candidateTime);
+  const candidateEnd = candidateStart + candidateDuration;
+  const blockedTableIds = getBlockedTableIdsForDateTime(
+    parameters,
+    candidateDateTime,
+    Math.max(1, candidateDuration * 60 * 1000),
+  );
+  const overlaps = (reservation) => {
+    const reservationTime = String(reservation?.reservationTime || "").slice(
+      0,
+      5,
+    );
+    const reservationStart = minutesFromServiceTime(reservationTime);
+    const reservationDuration = getOccupancyMinutes(
+      parameters,
+      reservationTime,
+    );
+    const reservationEnd = reservationStart + reservationDuration;
+
+    if (candidateDuration > 0 && reservationDuration > 0) {
+      return (
+        candidateStart < reservationEnd && candidateEnd > reservationStart
+      );
+    }
+    return reservationTime === candidateTime;
+  };
+  const freeSingleOptions = singleOptions.filter((option) =>
+    isConfiguredTableOptionFree({
+      option,
+      blockingReservations: dayReservations,
+      overlaps,
+      blockedTableIds,
+    }),
+  );
+  const eligibleIds = new Set(
+    singleOptions.map((table) => String(table?._id || "").trim()),
+  );
+  const eligibleNames = new Map(
+    singleOptions.map((table) => [
+      String(table?.name || "").trim().toLowerCase(),
+      String(table?._id || "").trim(),
+    ]),
+  );
+  const eligibleSeatSizes = new Set(
+    singleOptions.map((table) => Number(table?.seats || 0)),
+  );
+  const reservedIds = new Set(Array.from(blockedTableIds));
+  let unassignedCount = 0;
+
+  dayReservations.forEach((reservation) => {
+    if (!reservation?.table || !overlaps(reservation)) return;
+    const tableIds = getReservationTableIds(reservation.table);
+
+    if (reservation.table.source === "configured") {
+      const selectionKey =
+        tableIds.length > 1 ? `combo:${[...tableIds].sort().join("+")}` : tableIds[0];
+      if (selectionKey && eligibleIds.has(selectionKey)) {
+        reservedIds.add(selectionKey);
+        return;
+      }
+      const mappedId = eligibleNames.get(
+        String(reservation.table.name || "").trim().toLowerCase(),
+      );
+      if (mappedId) {
+        reservedIds.add(mappedId);
+        return;
+      }
+      if (
+        eligibleSeatSizes.has(Number(reservation.table.seats)) &&
+        tableIds.length <= 1
+      ) {
+        unassignedCount += 1;
+      }
+      return;
+    }
+
+    if (
+      reservation.table.source === "manual" &&
+      String(reservation.table.name || "").trim() &&
+      eligibleSeatSizes.has(Number(reservation.table.seats))
+    ) {
+      unassignedCount += 1;
+    }
+  });
+
+  if (
+    singleOptions.length > 0 &&
+    reservedIds.size + unassignedCount < singleOptions.length &&
+    freeSingleOptions.length > 0
+  ) {
+    return true;
+  }
+  if (unassignedCount > 0 || Number(numberOfGuests) <= 1) return false;
+
+  return getCombinedTableOptions(tablesCatalog, requiredSeats).some((option) =>
+    isConfiguredTableOptionFree({
+      option,
+      blockingReservations: dayReservations,
+      overlaps,
+      blockedTableIds,
+    }),
+  );
+}
+
 export function generateTimeOptions(openTime, closeTime, interval) {
   const times = [];
   const [openHour, openMinute] = String(openTime || "00:00")
@@ -408,8 +626,6 @@ export function generateTimeOptions(openTime, closeTime, interval) {
 
   if (Number.isNaN(step) || step <= 0) return times;
 
-  // Une fermeture antérieure à l'ouverture (19:30–02:00, par exemple)
-  // désigne un service qui se poursuit après minuit.
   if (end < start) end += 24 * 60;
 
   for (let minutes = start; minutes <= end; minutes += step) {
@@ -427,14 +643,13 @@ export function getAvailableReservationTimes({
   restaurant,
   reservationsList = [],
   slotCoverUsage = [],
+  excludeReservationId = null,
 }) {
   const parsedDate = parseReservationDateValue(reservationDate);
   if (!restaurant?._id || !parsedDate) return [];
 
   const parameters = getReservationParameters(restaurant);
-  const tablesCatalog = Array.isArray(parameters.tables)
-    ? parameters.tables
-    : [];
+  const tablesCatalog = getEnabledCatalogTables(parameters);
   const manage = !!parameters.manage_disponibilities;
   const dayHours = getDayHoursForDate({
     reservationDate: parsedDate,
@@ -458,23 +673,15 @@ export function getAvailableReservationTimes({
   if (isToday(parsedDate)) {
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    times = times.filter((time) => {
-      return minutesFromServiceTime(time) > currentMinutes;
-    });
+    times = times.filter(
+      (time) => minutesFromServiceTime(time) > currentMinutes,
+    );
   }
 
   times = times.filter((time) => {
-    const candidateDurationMs = Math.max(
-      1,
-      getOccupancyMinutes(parameters, time) * 60 * 1000,
-    );
     const candidateDateTime = buildReservationDateTime(parsedDate, time);
 
-    return !isDateTimeBlocked(
-      parameters,
-      candidateDateTime,
-      candidateDurationMs,
-    );
+    return !isDateTimeBlocked(parameters, candidateDateTime);
   });
 
   times = times.filter((time) =>
@@ -491,18 +698,17 @@ export function getAvailableReservationTimes({
     return times;
   }
 
-  const required = requiredTableSizeFromGuests(numberOfGuests);
-  if (required <= 0) return times;
-
-  const eligibleTables = tablesCatalog.filter(
-    (table) =>
-      Number(table?.seats || 0) === required && table?.onlineBookable !== false,
-  );
-
-  if (!eligibleTables.length) return [];
+  if (requiredTableSizeFromGuests(numberOfGuests) <= 0) return times;
 
   const formattedSelectedDate = formatReservationDateForApi(parsedDate);
   const dayReservations = reservationsList.filter((reservation) => {
+    if (
+      excludeReservationId &&
+      String(reservation?._id || "") === String(excludeReservationId)
+    ) {
+      return false;
+    }
+
     return (
       formatReservationDateForApi(reservation?.reservationDate) ===
         formattedSelectedDate && isBlockingReservation(reservation)
@@ -510,65 +716,15 @@ export function getAvailableReservationTimes({
   });
 
   return times.filter((time) => {
-    const candidateStart = minutesFromServiceTime(time);
-    const candidateDuration = getOccupancyMinutes(parameters, time);
-    const candidateEnd = candidateStart + candidateDuration;
-    const candidateDurationMs = Math.max(1, candidateDuration * 60 * 1000);
     const candidateDateTime = buildReservationDateTime(parsedDate, time);
-    const blockedTableIds = getBlockedTableIdsForDateTime(
+    return hasAvailableConfiguredTable({
       parameters,
+      tablesCatalog,
+      dayReservations,
+      numberOfGuests,
+      candidateTime: time,
       candidateDateTime,
-      candidateDurationMs,
-    );
-    const availableEligibleTables = eligibleTables.filter((table) => {
-      const tableId = String(table?._id || "");
-      if (!tableId) return true;
-      return !blockedTableIds.has(tableId);
     });
-
-    if (!availableEligibleTables.length) return false;
-
-    const conflicts = dayReservations.filter((reservation) => {
-      if (!reservation?.table) return false;
-
-      const reservationTableId = reservation?.table?._id
-        ? String(reservation.table._id)
-        : null;
-      const reservationTableName = String(reservation?.table?.name || "");
-
-      const matchesEligibleTable = availableEligibleTables.some((table) => {
-        const tableId = table?._id ? String(table._id) : null;
-
-        if (tableId && reservationTableId) {
-          return tableId === reservationTableId;
-        }
-
-        return String(table?.name || "") === reservationTableName;
-      });
-
-      if (!matchesEligibleTable) return false;
-
-      const reservationTime = String(reservation.reservationTime || "").slice(
-        0,
-        5,
-      );
-      const reservationStart = minutesFromServiceTime(reservationTime);
-      const reservationDuration = getOccupancyMinutes(
-        parameters,
-        reservationTime,
-      );
-      const reservationEnd = reservationStart + reservationDuration;
-
-      if (candidateDuration > 0 && reservationDuration > 0) {
-        return (
-          candidateStart < reservationEnd && candidateEnd > reservationStart
-        );
-      }
-
-      return reservationTime === String(time).slice(0, 5);
-    });
-
-    return conflicts.length < availableEligibleTables.length;
   });
 }
 
@@ -583,6 +739,7 @@ export function getReservationTimeOptions({
   restaurant,
   reservationsList = [],
   slotCoverUsage = [],
+  excludeReservationId = null,
 }) {
   const parsedDate = parseReservationDateValue(reservationDate);
   if (!restaurant?._id || !parsedDate) return [];
@@ -610,23 +767,15 @@ export function getReservationTimeOptions({
   if (isToday(parsedDate)) {
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    candidateTimes = candidateTimes.filter((time) => {
-      return minutesFromServiceTime(time) > currentMinutes;
-    });
+    candidateTimes = candidateTimes.filter(
+      (time) => minutesFromServiceTime(time) > currentMinutes,
+    );
   }
 
   candidateTimes = candidateTimes.filter((time) => {
-    const candidateDurationMs = Math.max(
-      1,
-      getOccupancyMinutes(parameters, time) * 60 * 1000,
-    );
     const candidateDateTime = buildReservationDateTime(parsedDate, time);
 
-    return !isDateTimeBlocked(
-      parameters,
-      candidateDateTime,
-      candidateDurationMs,
-    );
+    return !isDateTimeBlocked(parameters, candidateDateTime);
   });
 
   const availableTimes = getAvailableReservationTimes({
@@ -635,6 +784,7 @@ export function getReservationTimeOptions({
     restaurant,
     reservationsList,
     slotCoverUsage,
+    excludeReservationId,
   });
   const availableSet = new Set(availableTimes);
 

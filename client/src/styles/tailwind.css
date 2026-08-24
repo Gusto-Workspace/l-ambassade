@@ -1,3 +1,221 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.gusto-print-mode img,
+.gusto-print-mode picture,
+.gusto-print-mode svg,
+.gusto-print-mode video,
+.gusto-print-mode canvas,
+.gusto-print-mode iframe {
+  display: none !important;
+}
+.gusto-print-mode *,
+.gusto-print-mode *::before,
+.gusto-print-mode *::after {
+  background-image: none !important;
+}
+.gusto-print-mode .site-reveal,
+.gusto-print-mode .reveal-scale,
+.gusto-print-mode .stagger-item {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+.gusto-print-mode h1,
+.gusto-print-mode h2 {
+  text-wrap: balance;
+}
+.gusto-print-mode [data-print-title-price-row] {
+  display: flex !important;
+  align-items: flex-start !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  gap: 24px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.gusto-print-mode [data-print-title] {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.gusto-print-mode [data-print-price] {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+.gusto-print-mode .ambassade-editorial-heading > .ambassade-display {
+  font-size: 32px;
+}
+.gusto-print-mode .ambassade-menu-title h2 {
+  font-size: 30px;
+}
+.gusto-print-mode .ambassade-menu-menu-heading h2 {
+  font-size: 36px;
+}
+.gusto-print-mode .ambassade-menu-offer {
+  padding: 24px;
+}
+.gusto-print-mode .ambassade-menu-page {
+  padding-top: 0;
+}
+.gusto-print-mode .ambassade-editorial-heading > .ambassade-column-emblem {
+  display: none;
+}
+.gusto-print-mode .ambassade-menu-shell {
+  width: 100%;
+  margin: 6mm 0;
+}
+.gusto-print-mode .ambassade-menu-shell--continuation {
+  margin-top: 0;
+}
+.gusto-print-mode .ambassade-menu-rows {
+  gap: 6mm;
+}
+.gusto-print-mode .ambassade-menu-columns {
+  display: block;
+}
+.gusto-print-mode .ambassade-menu-columns > * + * {
+  margin-top: 8mm;
+  border: 0;
+  padding: 0;
+}
+.gusto-print-mode .ambassade-menu-columns--dynamic-row,
+.gusto-print-mode .ambassade-menu-shell--menus {
+  border-top: 0;
+}
+.gusto-print-mode .ambassade-menu-block {
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+.gusto-print-mode .ambassade-menu-block > .ambassade-menu-list {
+  margin-top: 22px;
+}
+.gusto-print-mode .ambassade-menu-title {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.gusto-print-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem auto;
+  max-width: 72rem;
+  padding: 1rem;
+}
+.gusto-print-toolbar button,
+.gusto-print-status button {
+  border-radius: 9999px;
+  border: 1px solid currentColor;
+  padding: 0.65rem 1.25rem;
+}
+.gusto-print-toolbar button:disabled {
+  opacity: 0.45;
+}
+.gusto-print-status {
+  margin: 4rem auto;
+  max-width: 48rem;
+  padding: 1rem;
+  text-align: center;
+}
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+@media screen {
+  html:has(.gusto-print-mode),
+  body:has(.gusto-print-mode) {
+    min-width: var(--gusto-print-page-width, 210mm);
+    margin: 0;
+    background: #dedbd5;
+  }
+  .gusto-print-mode {
+    position: relative;
+    z-index: 0;
+    box-sizing: border-box;
+    width: var(--gusto-print-page-width, 210mm);
+    min-height: var(--gusto-print-page-height, 297mm);
+    margin: 24px auto;
+    padding: var(--gusto-print-margin-block, 10mm)
+      var(--gusto-print-margin-inline, 12mm);
+    background-color: #f4efe7 !important;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 18%);
+  }
+  .gusto-print-toolbar {
+    position: fixed;
+    z-index: 20;
+    top: 16px;
+    right: 16px;
+    margin: 0;
+    border: 1px solid rgb(0 0 0 / 12%);
+    border-radius: 9999px;
+    background: white;
+    box-shadow: 0 4px 18px rgb(0 0 0 / 12%);
+  }
+  .gusto-print-toolbar > span {
+    display: none;
+  }
+}
+@media print {
+  html,
+  body {
+    width: 100%;
+    min-height: 100%;
+    overflow: visible !important;
+    background-color: #f4efe7 !important;
+  }
+  body {
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  [data-gusto-no-print] {
+    display: none !important;
+  }
+  .gusto-print-mode {
+    position: relative;
+    z-index: 0;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    min-height: 100vh;
+    padding: var(--gusto-print-margin-block, 10mm)
+      var(--gusto-print-margin-inline, 12mm);
+    overflow: visible;
+    background-color: #f4efe7 !important;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .gusto-print-mode::before {
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    background-color: inherit;
+    content: "";
+  }
+
+  [data-print-category-title],
+  [data-print-subcategory-title] {
+    break-inside: avoid;
+    break-after: avoid;
+    page-break-inside: avoid;
+    page-break-after: avoid;
+  }
+  .gusto-print-mode [data-print-category-first-chunk],
+  .gusto-print-mode [data-print-subcategory-first-chunk] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .gusto-print-mode
+    [data-print-category-first-chunk][data-print-category-without-dishes] {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  [data-print-dish],
+  [data-print-menu] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

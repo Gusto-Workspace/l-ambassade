@@ -41,7 +41,7 @@ export default function WaitlistOfferReservationsComponent({ token, apiBaseUrl }
         return;
       }
       setOffer((current) => ({ ...current, state: action === "accept" ? "accepted" : "declined", reservation: payload.reservation || current?.reservation }));
-      setMessage(action === "accept" ? "Votre réservation est confirmée." : "Votre refus a bien été pris en compte.");
+      setMessage(action === "accept" ? "Votre réservation est confirmée. Pour la modifier ou l’annuler, contactez directement le restaurant ou utilisez le lien présent dans l’e-mail de confirmation." : "Votre refus a bien été pris en compte.");
     } catch (responseError) { setError(responseError.message || "Impossible de répondre à cette proposition."); }
     finally { setActionLoading(""); }
   }
