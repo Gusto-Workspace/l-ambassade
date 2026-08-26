@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import RevealOnScrollComponent from "@/components/_shared/motion/reveal-on-scroll.component";
 import EditorialHeadingComponent from "@/components/_shared/editorial-heading/editorial-heading.component";
+import NewsMediaComponent from "@/components/news/news-media.component";
 import {
   formatNewsDate,
-  getNewsImage,
   getNewsLabel,
   getVisibleNews,
 } from "@/_assets/utils/news.utils";
@@ -52,19 +52,17 @@ export default function NewsHomeSection({ restaurantData }) {
 }
 
 function HomeNewsCard({ item, index, featured = false, dark = false }) {
+  const articleHref = item?._id
+    ? { pathname: "/news", query: { article: String(item._id) } }
+    : "/news";
+
   return (
     <RevealOnScrollComponent
       as="article"
       className={`ambassade-home-news__card${featured ? " ambassade-home-news__card--featured" : ""}${dark ? " ambassade-home-news__card--dark" : ""}`}
       delay={index * 90}
     >
-      <div className="ambassade-home-news__media">
-        <img
-          src={getNewsImage(item)}
-          alt={item.title || "Actualité de L’Ambassade"}
-          loading="lazy"
-        />
-      </div>
+      <NewsMediaComponent item={item} className="ambassade-home-news__media" />
       <div className="ambassade-home-news__body">
         <p className="ambassade-news-meta">{getNewsLabel(item, index)}</p>
         <time dateTime={item.published_at ? String(item.published_at) : undefined}>
@@ -72,7 +70,7 @@ function HomeNewsCard({ item, index, featured = false, dark = false }) {
         </time>
         <h3 className="ambassade-display">{item.title}</h3>
         {item.description ? <RichNewsExcerpt html={item.description} /> : null}
-        <Link href="/news" className="ambassade-news-link">
+        <Link href={articleHref} className="ambassade-news-link">
           Lire l’actualité
           <ArrowRight size={20} strokeWidth={1.4} aria-hidden="true" />
         </Link>
