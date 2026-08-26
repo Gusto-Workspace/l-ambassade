@@ -1,3 +1,5 @@
+const fallbackLabels = ["À table", "Au jardin", "La soirée", "L’Ambassade"];
+
 function normalizeDate(value) {
   if (!value) {
     return null;
@@ -10,6 +12,35 @@ function normalizeDate(value) {
   }
 
   return parsedDate;
+}
+
+export function stripNewsHtml(value) {
+  return String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function getNewsLabel(item, index = 0) {
+  return String(
+    item?.label ||
+      item?.category ||
+      item?.tag ||
+      item?.type ||
+      fallbackLabels[index % fallbackLabels.length],
+  );
+}
+
+export function getNewsImage(item, fallback = "/img/news/header.webp") {
+  return String(item?.image || fallback);
+}
+
+export function getNewsExcerpt(value, maxLength = 180) {
+  const plainText = stripNewsHtml(value);
+
+  return plainText.length > maxLength
+    ? `${plainText.slice(0, maxLength).trim()}…`
+    : plainText;
 }
 
 export function getVisibleNews(restaurantData) {

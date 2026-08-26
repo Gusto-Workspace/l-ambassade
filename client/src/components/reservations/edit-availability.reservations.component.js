@@ -46,6 +46,8 @@ export default function EditReservationAvailability({
         const query = new URLSearchParams({
           excludeReservationId: String(reservation._id),
           token: manageToken,
+          from: formatReservationDateForApi(editData.reservationDate),
+          to: formatReservationDateForApi(editData.reservationDate),
         });
         const response = await fetch(
           `${apiBaseUrl}/public/restaurants/${restaurant._id}/reservations?${query.toString()}`,
@@ -84,7 +86,7 @@ export default function EditReservationAvailability({
     return () => {
       isCurrent = false;
     };
-  }, [apiBaseUrl, manageToken, restaurant?._id, reservation?._id]);
+  }, [apiBaseUrl, editData.reservationDate, manageToken, restaurant?._id, reservation?._id]);
 
   const timeOptions = useMemo(
     () =>

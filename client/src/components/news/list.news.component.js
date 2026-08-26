@@ -3,21 +3,13 @@ import { ArrowRight, Loader2, X } from "lucide-react";
 import RevealOnScrollComponent from "../_shared/motion/reveal-on-scroll.component";
 import EditorialHeadingComponent from "../_shared/editorial-heading/editorial-heading.component";
 import ReservationHomeSection from "../home/sections/reservation.home.section";
-import { formatNewsDate, getVisibleNews } from "@/_assets/utils/news.utils";
-
-const fallbackLabels = ["À table", "Au jardin", "La soirée", "L’Ambassade"];
-
-function stripHtml(value) {
-  return String(value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
-
-function newsLabel(item, index) {
-  return String(item?.label || item?.category || item?.tag || item?.type || fallbackLabels[index % fallbackLabels.length]);
-}
-
-function newsImage(item, fallback = "/img/news/header.webp") {
-  return String(item?.image || fallback);
-}
+import {
+  formatNewsDate,
+  getNewsExcerpt,
+  getNewsImage,
+  getNewsLabel,
+  getVisibleNews,
+} from "@/_assets/utils/news.utils";
 
 function NewsButton({ onClick, children = "En savoir plus" }) {
   return <button type="button" onClick={onClick} className="ambassade-news-link">{children}<ArrowRight size={20} strokeWidth={1.4} /></button>;
@@ -50,7 +42,7 @@ export default function ListNewsComponent({ restaurantData, dataLoading = false 
 
       {!dataLoading && visibleNews.length ? <div className="ambassade-news-feed">
         <RevealOnScrollComponent className="ambassade-news-feature">
-          <div className="ambassade-news-feature__media"><img src={newsImage(visibleNews[0])} alt={visibleNews[0].title || "Actualité de L’Ambassade"} /></div>
+          <div className="ambassade-news-feature__media"><img src={getNewsImage(visibleNews[0])} alt={visibleNews[0].title || "Actualité de L’Ambassade"} /></div>
           <NewsCopy item={visibleNews[0]} index={0} onOpen={() => setSelected(visibleNews[0])} lead />
         </RevealOnScrollComponent>
 
@@ -59,7 +51,7 @@ export default function ListNewsComponent({ restaurantData, dataLoading = false 
           <div className="ambassade-news-previous">
             {previousNews.map((item, index) => <RevealOnScrollComponent key={item._id || `${item.title}-${index}`} className={`ambassade-news-row${index % 2 === 0 ? " ambassade-news-row--dark" : ""}`}>
               <NewsCopy item={item} index={index + 1} onOpen={() => setSelected(item)} />
-              <div className="ambassade-news-row__media"><img src={newsImage(item)} alt={item.title || "Actualité de L’Ambassade"} /></div>
+              <div className="ambassade-news-row__media"><img src={getNewsImage(item)} alt={item.title || "Actualité de L’Ambassade"} /></div>
             </RevealOnScrollComponent>)}
           </div>
         </> : null}
@@ -71,13 +63,12 @@ export default function ListNewsComponent({ restaurantData, dataLoading = false 
 
     {selected ? <div className="ambassade-news-modal" role="dialog" aria-modal="true" aria-labelledby="news-modal-title">
       <button type="button" className="ambassade-news-modal__backdrop" onClick={() => setSelected(null)} aria-label="Fermer" />
-      <article><button type="button" onClick={() => setSelected(null)} aria-label="Fermer l’actualité"><X size={24} /></button><p className="ambassade-news-meta">{newsLabel(selected, 0)} · {formatNewsDate(selected.published_at) || "Actualité"}</p><h2 id="news-modal-title" className="ambassade-display">{selected.title}</h2><div className="ambassade-news-modal__image"><img src={newsImage(selected)} alt={selected.title || "Actualité de L’Ambassade"} /></div>{selected.description ? <div className="ambassade-news-modal__body" dangerouslySetInnerHTML={{ __html: selected.description }} /> : null}</article>
+      <article><button type="button" onClick={() => setSelected(null)} aria-label="Fermer l’actualité"><X size={24} /></button><p className="ambassade-news-meta">{getNewsLabel(selected, 0)} · {formatNewsDate(selected.published_at) || "Actualité"}</p><h2 id="news-modal-title" className="ambassade-display">{selected.title}</h2><div className="ambassade-news-modal__image"><img src={getNewsImage(selected)} alt={selected.title || "Actualité de L’Ambassade"} /></div>{selected.description ? <div className="ambassade-news-modal__body" dangerouslySetInnerHTML={{ __html: selected.description }} /> : null}</article>
     </div> : null}
   </>;
 }
 
 function NewsCopy({ item, index, onOpen, lead = false }) {
-  const plainDescription = stripHtml(item.description);
-  const excerpt = plainDescription.length > 180 ? `${plainDescription.slice(0, 180).trim()}…` : plainDescription;
-  return <div className="ambassade-news-copy"><p className="ambassade-news-meta">{newsLabel(item, index)}</p><time>{formatNewsDate(item.published_at) || "Actualité"}</time><h2 className="ambassade-display">{item.title}</h2>{excerpt ? <p>{excerpt}</p> : null}<NewsButton onClick={onOpen}>{lead ? "Lire l’actualité" : "En savoir plus"}</NewsButton></div>;
+  const excerpt = getNewsExcerpt(item.description);
+  return <div className="ambassade-news-copy"><p className="ambassade-news-meta">{getNewsLabel(item, index)}</p><time>{formatNewsDate(item.published_at) || "Actualité"}</time><h2 className="ambassade-display">{item.title}</h2>{excerpt ? <p>{excerpt}</p> : null}<NewsButton onClick={onOpen}>{lead ? "Lire l’actualité" : "En savoir plus"}</NewsButton></div>;
 }

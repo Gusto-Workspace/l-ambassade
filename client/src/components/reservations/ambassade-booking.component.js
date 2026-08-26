@@ -41,7 +41,9 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
     if (!apiBaseUrl || !restaurant?._id) return;
     setLoadingSlots(true);
     try {
-      const response = await fetch(`${apiBaseUrl}/public/restaurants/${restaurant._id}/reservations`);
+      const dateKey = formatReservationDateForApi(date);
+      const query = new URLSearchParams({ from: dateKey, to: dateKey });
+      const response = await fetch(`${apiBaseUrl}/public/restaurants/${restaurant._id}/reservations?${query.toString()}`);
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error("availability");
       setReservations(Array.isArray(payload.reservations) ? payload.reservations : []);
@@ -52,7 +54,7 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
     } finally {
       setLoadingSlots(false);
     }
-  }, [apiBaseUrl, restaurant?._id]);
+  }, [apiBaseUrl, date, restaurant?._id]);
 
   useEffect(() => { loadReservations(); }, [loadReservations]);
 
