@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { Instagram } from "lucide-react";
 import { GlobalContext } from "@/contexts/global.context";
 import { getSocialLinks } from "@/_assets/utils/site-display.utils";
+import { hasGiftCardShop } from "@/_assets/utils/gift-cards.utils";
 import {
   buildContactInfos,
   buildContactSchedules,
@@ -46,6 +47,9 @@ export default function FooterComponent() {
           <Link href="/">Accueil</Link>
           <Link href="/menus">Carte & menus</Link>
           <Link href="/news">Actualités</Link>
+          {hasGiftCardShop(restaurantData) ? (
+            <Link href="/gift-cards">Cartes cadeaux</Link>
+          ) : null}
           <Link href="/contact">Contact</Link>
         </nav>
 

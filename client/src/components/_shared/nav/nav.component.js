@@ -5,11 +5,13 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { GlobalContext } from "@/contexts/global.context";
 import { hasVisibleNews } from "@/_assets/utils/news.utils";
+import { hasGiftCardShop } from "@/_assets/utils/gift-cards.utils";
 
 const baseMenuItems = [
   { label: "Accueil", href: "/" },
   { label: "Carte & menus", href: "/menus" },
   { label: "Actualités", href: "/news", visibilityKey: "news" },
+  { label: "Cartes cadeaux", href: "/gift-cards", visibilityKey: "gift_cards" },
   { label: "Contact", href: "/contact" },
 ];
 let hasAssignedInitialNavReveal = false;
@@ -52,7 +54,17 @@ export default function NavComponent({ isVisible = true, scrolled = false }) {
   const [visibilityTransitionsEnabled, setVisibilityTransitionsEnabled] = useState(hasAssignedInitialNavReveal);
   const restaurantData = restaurantContext?.restaurantData;
   const restaurantDataLoading = restaurantContext?.dataLoading;
-  const menuItems = useMemo(() => baseMenuItems.filter((item) => item.visibilityKey !== "news" || (newsVisibilityResolved && hasVisibleNews(restaurantData))), [newsVisibilityResolved, restaurantData]);
+  const menuItems = useMemo(
+    () =>
+      baseMenuItems.filter((item) => {
+        if (!item.visibilityKey) return true;
+        if (!newsVisibilityResolved) return false;
+        if (item.visibilityKey === "news") return hasVisibleNews(restaurantData);
+        if (item.visibilityKey === "gift_cards") return hasGiftCardShop(restaurantData);
+        return true;
+      }),
+    [newsVisibilityResolved, restaurantData],
+  );
 
   useEffect(() => {
     if (isVisible && !hasAssignedInitialNavReveal) {

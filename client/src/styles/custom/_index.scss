@@ -3360,3 +3360,148 @@ a {
 .ambassade-news-modal__body ul { list-style: disc; }
 .ambassade-news-modal__body ol { list-style: decimal; }
 .ambassade-news-modal__body a { color: var(--color-copper-dark); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Cartes cadeaux */
+.ambassade-gifts-catalog {
+  width: min(100% - 48px, 1180px);
+  margin: 0 auto;
+  padding: 68px 0 90px;
+}
+
+.ambassade-gifts-groups { display: flex; flex-direction: column; gap: 72px; margin-top: 60px; }
+.ambassade-gifts-group + .ambassade-gifts-group { border-top: 1px solid rgba(145, 70, 39, .3); padding-top: 64px; }
+.ambassade-gifts-group__heading { max-width: 760px; margin: 0 auto; text-align: center; }
+.ambassade-gifts-group__heading h2 { margin: 0; color: var(--color-copper-dark); font-family: var(--font-bodoni-moda), Didot, serif; font-size: clamp(29px, 3vw, 42px); font-weight: 400; letter-spacing: .04em; line-height: 1.1; text-transform: uppercase; }
+.ambassade-gifts-group__heading p { margin: 15px 0 0; color: var(--color-muted); font-size: 14px; line-height: 1.7; }
+.ambassade-gifts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 44px 34px;
+  margin-top: 38px;
+}
+
+.ambassade-gift-card {
+  overflow: hidden;
+  border: 1px solid rgba(145, 70, 39, .22);
+  background: rgba(255, 253, 248, .7);
+  box-shadow: 0 20px 50px rgba(39, 37, 33, .07);
+}
+
+.ambassade-gift-card__content { padding: 25px 28px 29px; text-align: center; }
+.ambassade-gift-card__content > strong { display: block; color: var(--color-copper-dark); font-family: var(--font-bodoni-moda), Didot, serif; font-size: 28px; font-weight: 500; white-space: nowrap; }
+.ambassade-gift-card__content > small { display: block; margin: 9px 0 23px; color: var(--color-muted); font-size: 11px; line-height: 1.6; text-transform: uppercase; }
+.ambassade-gift-card__content .ambassade-button { width: 100%; }
+
+.ambassade-gift-visual {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: var(--color-forest-dark);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  container-type: inline-size;
+}
+
+.ambassade-gift-visual__copy { position: absolute; inset-block: 0; display: flex; width: 62%; justify-content: center; flex-direction: column; gap: 2.4cqw; padding: 4cqw; text-align: center; }
+.ambassade-gift-visual__copy--left { left: 0; }
+.ambassade-gift-visual__copy--center { left: 50%; transform: translateX(-50%); }
+.ambassade-gift-visual__copy--right { right: 0; }
+.ambassade-gift-visual__copy small { font-size: clamp(7px, 1.55cqw, 11px); font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
+.ambassade-gift-visual__copy h2 { margin: 0; font-family: var(--font-bodoni-moda), Didot, serif; font-size: clamp(19px, 5cqw, 38px); font-weight: 400; letter-spacing: .05em; line-height: 1; text-transform: uppercase; }
+.ambassade-gift-visual__copy strong { font-family: var(--font-bodoni-moda), Didot, serif; font-size: clamp(15px, 3.8cqw, 29px); font-weight: 500; }
+.ambassade-gift-visual__copy p,.ambassade-gift-visual__copy em { margin: 0; font-size: clamp(8px, 2cqw, 14px); line-height: 1.25; }
+.ambassade-gift-visual__copy em { display: -webkit-box; overflow: hidden; font-family: var(--font-bodoni-moda), Didot, serif; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+
+.ambassade-gifts-state {
+  display: flex;
+  min-height: 330px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  padding: 55px 20px;
+  color: var(--color-muted);
+  text-align: center;
+}
+.ambassade-gifts-state > svg { color: var(--color-copper); }
+.ambassade-gifts-state h1,.ambassade-gifts-state h2 { margin: 0; color: var(--color-text); font-family: var(--font-bodoni-moda), Didot, serif; font-size: clamp(28px, 3vw, 40px); font-weight: 400; text-transform: uppercase; }
+.ambassade-gifts-state p { margin: 0 0 10px; }
+
+.ambassade-gift-buy-page { min-height: 100vh; }
+.ambassade-gift-buy-page > main { min-height: 760px; padding-top: 110px; }
+.ambassade-gift-checkout { width: min(100% - 48px, 1240px); margin: 0 auto; padding: 45px 0 90px; }
+.ambassade-gift-checkout__back { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 24px; color: var(--color-copper-dark); font-size: 11px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; }
+.ambassade-gift-checkout__grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(480px, 1.05fr); gap: 52px; align-items: start; }
+.ambassade-gift-checkout__preview { position: sticky; top: 135px; padding-top: 72px; }
+.ambassade-gift-checkout__preview .ambassade-gift-visual { box-shadow: 0 28px 65px rgba(22, 29, 25, .2); }
+.ambassade-gift-checkout__panel { border: 1px solid rgba(145, 70, 39, .2); background: rgba(255, 253, 248, .82); padding: 34px; box-shadow: 0 22px 55px rgba(39, 37, 33, .07); }
+
+.ambassade-gift-steps { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 0 36px; padding: 0; list-style: none; }
+.ambassade-gift-steps li { position: relative; display: flex; align-items: center; flex-direction: column; gap: 8px; color: var(--color-muted); font-size: 9px; font-weight: 600; letter-spacing: .1em; text-align: center; text-transform: uppercase; }
+.ambassade-gift-steps li::before { position: absolute; z-index: 0; top: 14px; right: 50%; left: -50%; height: 1px; background: rgba(145, 70, 39, .22); content: ""; }
+.ambassade-gift-steps li:first-child::before { display: none; }
+.ambassade-gift-steps li > span { position: relative; z-index: 1; display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid rgba(145, 70, 39, .35); border-radius: 50%; background: var(--color-white); color: var(--color-copper-dark); }
+.ambassade-gift-steps li.is-active { color: var(--color-text); }
+.ambassade-gift-steps li.is-active > span { border-color: var(--color-copper); background: var(--color-copper); color: var(--color-white); }
+
+.ambassade-gift-form { display: flex; flex-direction: column; gap: 28px; }
+.ambassade-gift-form fieldset { display: flex; min-width: 0; flex-direction: column; gap: 19px; border: 0; margin: 0; padding: 0; }
+.ambassade-gift-form legend { width: 100%; margin-bottom: 20px; border-bottom: 1px solid rgba(145, 70, 39, .22); padding-bottom: 10px; color: var(--color-copper-dark); font-family: var(--font-bodoni-moda), Didot, serif; font-size: 22px; text-transform: uppercase; }
+.ambassade-gift-form__row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.ambassade-gift-field { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+.ambassade-gift-field > span,.ambassade-stripe-fields label > span:first-child { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.ambassade-gift-field input,.ambassade-gift-field textarea { width: 100%; min-height: 43px; border: 0; border-bottom: 1px solid rgba(39, 37, 33, .36); border-radius: 0; background: transparent; padding: 7px 2px; color: var(--color-text); font: inherit; outline: none; }
+.ambassade-gift-field textarea { min-height: 86px; border: 1px solid rgba(39, 37, 33, .3); padding: 10px; resize: vertical; }
+.ambassade-gift-field input:focus,.ambassade-gift-field textarea:focus { border-color: var(--color-copper); }
+.ambassade-gift-field small { color: #9e3535; font-size: 10px; }
+.ambassade-gift-form__check { display: flex; align-items: center; gap: 11px; font-size: 12px; }
+.ambassade-gift-form__check input { width: 18px; height: 18px; accent-color: var(--color-copper); }
+.ambassade-gift-form__notice { margin: 0; border-left: 2px solid var(--color-copper); padding-left: 14px; color: var(--color-muted); font-size: 12px; line-height: 1.65; }
+.ambassade-gift-form > .ambassade-button,.ambassade-gift-payment > .ambassade-button { width: 100%; }
+
+.ambassade-gift-checkout__edit { display: block; margin: -12px 0 24px auto; border: 0; border-bottom: 1px solid currentColor; background: none; padding: 3px 0; color: var(--color-copper-dark); font-size: 10px; text-transform: uppercase; cursor: pointer; }
+.ambassade-gift-payment { display: flex; flex-direction: column; gap: 24px; }
+.ambassade-stripe-fields { display: flex; flex-direction: column; gap: 18px; }
+.ambassade-stripe-fields.is-disabled { pointer-events: none; opacity: .55; }
+.ambassade-stripe-fields > label,.ambassade-stripe-fields > div > label { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 8px; }
+.ambassade-stripe-fields > div { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.ambassade-stripe-field { display: block; min-height: 44px; border: 1px solid rgba(39, 37, 33, .3); background: var(--color-white); padding: 13px 12px; }
+.ambassade-gift-payment__secure { margin: 0; color: var(--color-muted); font-size: 11px; line-height: 1.6; text-align: center; }
+.ambassade-gift-payment__error { border: 1px solid rgba(158, 53, 53, .35); background: rgba(158, 53, 53, .06); padding: 13px; color: #7e2b2b; font-size: 12px; line-height: 1.6; }
+.ambassade-gift-payment__error p { margin: 0; }
+.ambassade-gift-payment__error button { margin-top: 8px; border: 0; border-bottom: 1px solid currentColor; background: none; padding: 2px 0; color: inherit; font-weight: 600; cursor: pointer; }
+.ambassade-gift-payment .ambassade-button:disabled { cursor: not-allowed; opacity: .6; }
+
+.ambassade-gift-success { display: flex; min-height: 430px; align-items: center; justify-content: center; flex-direction: column; gap: 20px; text-align: center; }
+.ambassade-gift-success > svg { width: 52px; height: 52px; color: var(--color-forest); }
+.ambassade-gift-success h1 { margin: 0; font-family: var(--font-bodoni-moda), Didot, serif; font-size: 38px; font-weight: 400; text-transform: uppercase; }
+.ambassade-gift-success p { max-width: 470px; margin: 0; line-height: 1.7; }
+.ambassade-gift-success__code { border-block: 1px solid rgba(145, 70, 39, .25); padding: 13px 20px; }
+
+@media (min-width: 1024px) and (max-width: 1180px) {
+  .ambassade-nav__inner { width: calc(100% - 44px); }
+  .ambassade-nav__desktop { gap: 15px; }
+  .ambassade-nav__booking { padding-inline: 16px; }
+}
+
+@media (max-width: 900px) {
+  .ambassade-gifts-grid { grid-template-columns: 1fr; }
+  .ambassade-gift-checkout__grid { grid-template-columns: 1fr; }
+  .ambassade-gift-checkout__preview { position: static; padding-top: 0; }
+}
+
+@media (max-width: 767px) {
+  .ambassade-gifts-catalog { width: calc(100% - 40px); padding: 52px 0 68px; }
+  .ambassade-gifts-groups { gap: 52px; margin-top: 44px; }
+  .ambassade-gifts-group + .ambassade-gifts-group { padding-top: 48px; }
+  .ambassade-gifts-grid { gap: 28px; margin-top: 30px; }
+  .ambassade-gift-card__content { padding: 22px 20px 24px; }
+  .ambassade-gift-buy-page > main { padding-top: 78px; }
+  .ambassade-gift-checkout { width: calc(100% - 30px); padding: 28px 0 65px; }
+  .ambassade-gift-checkout__grid { gap: 24px; }
+  .ambassade-gift-checkout__panel { padding: 25px 18px; }
+  .ambassade-gift-form__row,.ambassade-stripe-fields > div { grid-template-columns: 1fr; }
+  .ambassade-gift-steps li { font-size: 8px; letter-spacing: .04em; }
+  .ambassade-gift-success h1 { font-size: 31px; }
+}
