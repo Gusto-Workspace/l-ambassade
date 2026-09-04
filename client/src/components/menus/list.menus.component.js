@@ -245,6 +245,7 @@ export default function ListMenusComponent({
         <div
           id="menus"
           className="ambassade-menu-shell ambassade-menu-shell--menus"
+          data-print-menus-start={printMode ? "true" : undefined}
         >
           <div className="ambassade-menu-content">
             <div className="ambassade-menu-menu-heading">

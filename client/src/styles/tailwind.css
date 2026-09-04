@@ -196,6 +196,11 @@
     content: "";
   }
 
+  .gusto-print-mode [data-print-menus-start] {
+    break-before: page;
+    page-break-before: always;
+  }
+
   [data-print-category-title],
   [data-print-subcategory-title] {
     break-inside: avoid;
