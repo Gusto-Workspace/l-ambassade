@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
 import {
   CardCvcElement,
   CardExpiryElement,
@@ -26,7 +25,9 @@ function getErrorMessage(error) {
 async function readJsonResponse(response) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok || data.error) {
-    const error = new Error(data.error || "Le service de paiement ne répond pas.");
+    const error = new Error(
+      data.error || "Le service de paiement ne répond pas.",
+    );
     error.status = response.status;
     throw error;
   }
@@ -44,6 +45,7 @@ export default function PaymentFormGiftCardsComponent({
   const submitLock = useRef(false);
   const restaurantId = process.env.NEXT_PUBLIC_RESTAURANT_ID;
   const checkoutKey = getGiftCheckoutKey(restaurantId, giftId, amountCents);
+  const legacyCheckoutKey = `${checkoutKey}:${amountCents}`;
   const [clientSecret, setClientSecret] = useState("");
   const [paymentIntentId, setPaymentIntentId] = useState("");
   const [isPreparing, setIsPreparing] = useState(true);
@@ -70,7 +72,14 @@ export default function PaymentFormGiftCardsComponent({
   function readCheckout() {
     if (typeof window === "undefined") return null;
     try {
-      return safeJsonParse(localStorage.getItem(checkoutKey));
+      const current = safeJsonParse(localStorage.getItem(checkoutKey));
+      if (current) return current;
+      const legacy = safeJsonParse(localStorage.getItem(legacyCheckoutKey));
+      if (legacy) {
+        localStorage.setItem(checkoutKey, JSON.stringify(legacy));
+        localStorage.removeItem(legacyCheckoutKey);
+      }
+      return legacy;
     } catch {
       return null;
     }
@@ -89,6 +98,7 @@ export default function PaymentFormGiftCardsComponent({
     if (typeof window === "undefined") return;
     try {
       localStorage.removeItem(checkoutKey);
+      localStorage.removeItem(legacyCheckoutKey);
     } catch {
       // Aucun traitement supplémentaire nécessaire.
     }
@@ -104,19 +114,20 @@ export default function PaymentFormGiftCardsComponent({
         restaurantId,
         giftId,
         checkoutId,
+        formData,
       }),
     });
     return readJsonResponse(response);
   }
 
-  async function verifyPayment(paymentId) {
+  async function requestOrder(action, checkoutId, paymentId = null) {
     const response = await fetch("/api/payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        action: "verify",
+        action,
+        checkoutId,
         paymentIntentId: paymentId,
-        amount: amountCents,
         restaurantId,
         giftId,
       }),
@@ -124,25 +135,28 @@ export default function PaymentFormGiftCardsComponent({
     return readJsonResponse(response);
   }
 
-  async function registerPurchase(paymentId, proof, data) {
-    const apiUrl = String(process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
-    const response = await axios.post(
-      `${apiUrl}/restaurants/${restaurantId}/gifts/${giftId}/purchase`,
-      {
-        ...data,
-        paymentIntentId: paymentId,
-        amount: amountCents,
-        fallbackGiftCardBackgroundUrl: `${window.location.origin}/img/home/la-tablee.webp`,
-      },
-      {
-        headers: {
-          "x-gusto-timestamp": proof.timestamp,
-          "x-gusto-signature": proof.signature,
-        },
-        timeout: 20000,
-      },
-    );
-    return response.data;
+  async function waitForOrder(checkoutId) {
+    let lastResult = null;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      lastResult = await requestOrder("status", checkoutId);
+      if (
+        lastResult.order?.finalizationStatus === "finalized" ||
+        lastResult.order?.paymentStatus === "pending"
+      ) {
+        return lastResult;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    return lastResult;
+  }
+
+  function completeCheckout(order) {
+    clearCheckout();
+    onPaymentSuccess({
+      purchaseCode: order.purchaseCode,
+      validUntil: order.validUntil,
+      emailStatus: { sent: order.emailStatus === "completed" },
+    });
   }
 
   async function finalizePaidCheckout(checkout) {
@@ -153,24 +167,41 @@ export default function PaymentFormGiftCardsComponent({
     setIsFinalizing(true);
     setErrorMessage("");
     try {
-      const proof = await verifyPayment(checkout.paymentIntentId);
-      const purchase = await registerPurchase(
+      const result = await requestOrder(
+        "finalize",
+        checkout.checkoutId,
         checkout.paymentIntentId,
-        proof,
-        checkout.formDataSnapshot || formData,
       );
-      clearCheckout();
-      onPaymentSuccess(purchase);
+      completeCheckout(result.order);
       return "completed";
     } catch (error) {
-      if (error?.status === 402 && checkout.state === "confirming") {
-        writeCheckout({ ...checkout, state: "payment" });
-        setErrorMessage("");
-        return "payment";
-      } else {
-        writeCheckout({ ...checkout, state: "paid" });
+      try {
+        const status = await waitForOrder(checkout.checkoutId);
+        if (status.order?.finalizationStatus === "finalized") {
+          completeCheckout(status.order);
+          return "completed";
+        }
+        if (
+          status.order?.paymentStatus === "pending" &&
+          checkout.state === "confirming"
+        ) {
+          writeCheckout({ ...checkout, state: "payment" });
+          setErrorMessage("");
+          return "payment";
+        }
+      } catch {
+        // On conserve le checkout local pour une reprise ultérieure.
       }
-      setErrorMessage(getErrorMessage(error));
+      const paymentWasConfirmed = checkout.state === "paid";
+      writeCheckout({
+        ...checkout,
+        state: paymentWasConfirmed ? "paid" : "confirming",
+      });
+      setErrorMessage(
+        paymentWasConfirmed
+          ? "Votre paiement est confirmé. La création de votre carte est toujours en cours ; vous pouvez relancer la confirmation sans repayer."
+          : "Le statut de votre paiement est en cours de vérification. Relancez la vérification sans saisir une nouvelle carte.",
+      );
       return "retry";
     } finally {
       setIsFinalizing(false);
@@ -216,7 +247,6 @@ export default function PaymentFormGiftCardsComponent({
           formDataSnapshot: checkout.formDataSnapshot || formData,
         };
         writeCheckout(checkout);
-
       } catch (error) {
         if (!cancelled) setErrorMessage(getErrorMessage(error));
       } finally {
@@ -260,7 +290,9 @@ export default function PaymentFormGiftCardsComponent({
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card,
-          billing_details: { name: `${payer.firstName} ${payer.lastName}`.trim() },
+          billing_details: {
+            name: `${payer.firstName} ${payer.lastName}`.trim(),
+          },
         },
       });
       if (result.error) {
@@ -297,7 +329,10 @@ export default function PaymentFormGiftCardsComponent({
           <input
             value={payer.firstName}
             onChange={(event) =>
-              setPayer((current) => ({ ...current, firstName: event.target.value }))
+              setPayer((current) => ({
+                ...current,
+                firstName: event.target.value,
+              }))
             }
             maxLength={80}
             autoComplete="cc-given-name"
@@ -310,7 +345,10 @@ export default function PaymentFormGiftCardsComponent({
           <input
             value={payer.lastName}
             onChange={(event) =>
-              setPayer((current) => ({ ...current, lastName: event.target.value }))
+              setPayer((current) => ({
+                ...current,
+                lastName: event.target.value,
+              }))
             }
             maxLength={80}
             autoComplete="cc-family-name"
@@ -320,7 +358,13 @@ export default function PaymentFormGiftCardsComponent({
         </label>
       </div>
 
-      <div className={disabled ? "ambassade-stripe-fields is-disabled" : "ambassade-stripe-fields"}>
+      <div
+        className={
+          disabled
+            ? "ambassade-stripe-fields is-disabled"
+            : "ambassade-stripe-fields"
+        }
+      >
         <label>
           <span>Numéro de carte</span>
           <span className="ambassade-stripe-field">
@@ -346,7 +390,7 @@ export default function PaymentFormGiftCardsComponent({
       {errorMessage ? (
         <div className="ambassade-gift-payment__error" role="alert">
           <p>{errorMessage}</p>
-          {readCheckout()?.state === "paid" ? (
+          {["confirming", "paid"].includes(readCheckout()?.state) ? (
             <button
               type="button"
               onClick={() => finalizePaidCheckout(readCheckout())}
@@ -359,7 +403,8 @@ export default function PaymentFormGiftCardsComponent({
       ) : null}
 
       <p className="ambassade-gift-payment__secure">
-        Paiement sécurisé par Stripe. Aucune donnée bancaire n’est stockée par L’Ambassade.
+        Paiement sécurisé par Stripe. Aucune donnée bancaire n’est stockée par
+        L’Ambassade.
       </p>
       <button
         type="submit"

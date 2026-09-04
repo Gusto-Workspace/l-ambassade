@@ -110,8 +110,8 @@ export function makeGiftCheckoutId() {
   return `chk_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
-export function getGiftCheckoutKey(restaurantId, giftId, amountCents) {
-  return `${GIFT_CHECKOUT_PREFIX}:${restaurantId}:${giftId}:${amountCents}`;
+export function getGiftCheckoutKey(restaurantId, giftId) {
+  return `${GIFT_CHECKOUT_PREFIX}:${restaurantId}:${giftId}`;
 }
 
 export function cleanStaleGiftCheckouts(restaurantId) {

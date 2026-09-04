@@ -41,7 +41,9 @@ export default function BuyGiftCardsComponent() {
   const [purchase, setPurchase] = useState(null);
   const restaurant = restaurantContext?.restaurantData;
   const restaurantId = process.env.NEXT_PUBLIC_RESTAURANT_ID;
-  const giftId = Array.isArray(router.query.id) ? router.query.id[0] : router.query.id;
+  const giftId = Array.isArray(router.query.id)
+    ? router.query.id[0]
+    : router.query.id;
   const giftCard = useMemo(
     () =>
       getVisibleGiftCards(restaurant).find(
@@ -54,8 +56,15 @@ export default function BuyGiftCardsComponent() {
   useEffect(() => {
     if (!giftCard || !amountCents || !restaurantId) return;
     const key = getGiftCheckoutKey(restaurantId, giftCard._id, amountCents);
+    const legacyKey = `${key}:${amountCents}`;
     try {
-      const checkout = safeJsonParse(localStorage.getItem(key));
+      const checkout =
+        safeJsonParse(localStorage.getItem(key)) ||
+        safeJsonParse(localStorage.getItem(legacyKey));
+      if (checkout && !localStorage.getItem(key)) {
+        localStorage.setItem(key, JSON.stringify(checkout));
+        localStorage.removeItem(legacyKey);
+      }
       if (checkout?.formDataSnapshot) {
         const snapshot = checkout.formDataSnapshot;
         const beneficiary = [
@@ -84,17 +93,30 @@ export default function BuyGiftCardsComponent() {
     setFormData(values);
     if (restaurantId && amountCents) {
       const key = getGiftCheckoutKey(restaurantId, giftCard._id, amountCents);
+      const legacyKey = `${key}:${amountCents}`;
       try {
-        const existing = safeJsonParse(localStorage.getItem(key));
+        const existing =
+          safeJsonParse(localStorage.getItem(key)) ||
+          safeJsonParse(localStorage.getItem(legacyKey));
+        const formChangedAfterPaymentPreparation =
+          existing?.paymentIntentId &&
+          JSON.stringify(existing.formDataSnapshot || {}) !==
+            JSON.stringify(values);
         localStorage.setItem(
           key,
           JSON.stringify({
-            ...(existing || { checkoutId: makeGiftCheckoutId() }),
+            ...(!formChangedAfterPaymentPreparation && existing
+              ? existing
+              : { checkoutId: makeGiftCheckoutId() }),
             state: "payment",
-            createdAt: existing?.createdAt || Date.now(),
+            createdAt:
+              !formChangedAfterPaymentPreparation && existing?.createdAt
+                ? existing.createdAt
+                : Date.now(),
             formDataSnapshot: values,
           }),
         );
+        localStorage.removeItem(legacyKey);
       } catch {
         // Le composant de paiement recréera une session en mémoire.
       }
@@ -116,7 +138,10 @@ export default function BuyGiftCardsComponent() {
       <div className="ambassade-gifts-state">
         <h1>Cette carte cadeau n’est plus disponible.</h1>
         <p>Son offre a pu être modifiée depuis votre dernière visite.</p>
-        <Link href="/gift-cards" className="ambassade-button ambassade-button--outline">
+        <Link
+          href="/gift-cards"
+          className="ambassade-button ambassade-button--outline"
+        >
           Voir les cartes disponibles
         </Link>
       </div>
@@ -140,11 +165,17 @@ export default function BuyGiftCardsComponent() {
         </div>
         <div className="ambassade-gift-checkout__panel">
           <ol className="ambassade-gift-steps" aria-label="Étapes de commande">
-            {["Informations", "Paiement", "Confirmation"].map((label, index) => (
-              <li className={step >= index + 1 ? "is-active" : ""} key={label}>
-                <span>{index + 1}</span>{label}
-              </li>
-            ))}
+            {["Informations", "Paiement", "Confirmation"].map(
+              (label, index) => (
+                <li
+                  className={step >= index + 1 ? "is-active" : ""}
+                  key={label}
+                >
+                  <span>{index + 1}</span>
+                  {label}
+                </li>
+              ),
+            )}
           </ol>
 
           {step === 1 ? (
@@ -193,14 +224,18 @@ export default function BuyGiftCardsComponent() {
               <CheckCircle2 aria-hidden="true" />
               <h1>Votre cadeau est prêt.</h1>
               <p>
-                La carte cadeau a été achetée et envoyée à {formData.sendEmail}.
+                Votre paiement est confirmé. La carte cadeau va être envoyée à{" "}
+                {formData.sendEmail}.
               </p>
               {purchase?.purchaseCode ? (
                 <p className="ambassade-gift-success__code">
                   Référence : <strong>{purchase.purchaseCode}</strong>
                 </p>
               ) : null}
-              <Link href="/" className="ambassade-button ambassade-button--outline">
+              <Link
+                href="/"
+                className="ambassade-button ambassade-button--outline"
+              >
                 Retour à l’accueil
               </Link>
             </div>

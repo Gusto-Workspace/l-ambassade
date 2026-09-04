@@ -1,11 +1,15 @@
 import crypto from "crypto";
 import Stripe from "stripe";
 
-const MAX_STRIPE_AMOUNT = 99_999_999;
+import {
+  postGiftCardOrder,
+  toPaymentSummary,
+} from "@/_assets/server/gift-card-order-api";
 
-function normalizeUrl(value) {
-  return String(value || "").trim().replace(/\/+$/, "");
-}
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX_CHECKOUTS = 30;
+const createAttempts = new Map();
+let stripeAccountPromise = null;
 
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -17,71 +21,81 @@ function validateCheckoutId(value) {
   return /^[a-zA-Z0-9_-]{16,128}$/.test(String(value || ""));
 }
 
-async function getTrustedGiftCard(
-  restaurantId,
-  giftId,
-  { requireAvailable = true } = {},
-) {
-  const configuredRestaurantId = String(
-    process.env.NEXT_PUBLIC_RESTAURANT_ID || "",
-  ).trim();
-  const apiUrl = normalizeUrl(process.env.NEXT_PUBLIC_API_URL);
-
-  if (!configuredRestaurantId || !apiUrl) {
-    throw new Error("Configuration restaurant absente");
-  }
-  if (String(restaurantId) !== configuredRestaurantId) {
-    return { error: "Restaurant invalide", status: 400 };
-  }
-
-  const response = await fetch(
-    `${apiUrl}/restaurants/${encodeURIComponent(configuredRestaurantId)}`,
-    { headers: { Accept: "application/json" }, cache: "no-store" },
-  );
-  if (!response.ok) {
-    throw new Error("Le catalogue de cartes cadeaux est indisponible");
-  }
-
-  const data = await response.json();
-  const restaurant = data?.restaurant;
-  const giftCard = Array.isArray(restaurant?.giftCards)
-    ? restaurant.giftCards.find(
-        (candidate) => String(candidate?._id) === String(giftId),
-      )
-    : null;
-
-  if (!giftCard) {
-    return { error: "Carte cadeau introuvable", status: 404 };
-  }
-  if (
-    requireAvailable &&
-    (restaurant?.options?.gift_card !== true || giftCard.visible !== true)
-  ) {
-    return { error: "Carte cadeau indisponible", status: 404 };
-  }
-
-  const amount = Math.round(Number(giftCard.value) * 100);
-  if (!Number.isSafeInteger(amount) || amount <= 0 || amount > MAX_STRIPE_AMOUNT) {
-    throw new Error("Montant de carte cadeau invalide");
-  }
-
-  return { amount };
+function getClientIp(req) {
+  return String(
+    req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown",
+  )
+    .split(",")[0]
+    .trim();
 }
 
-function signProof(payload, timestamp) {
+function getRequestFingerprint(req) {
   const secret = process.env.GUSTO_SHARED_SECRET;
   if (!secret) throw new Error("Configuration de signature absente");
-
   return crypto
     .createHmac("sha256", secret)
-    .update(`${timestamp}.${JSON.stringify(payload)}`)
+    .update(getClientIp(req))
     .digest("hex");
 }
 
-function sendError(res, error) {
-  console.error("Gift card payment error:", error);
-  return res.status(500).json({
-    error: "Le paiement est momentanément indisponible. Veuillez réessayer.",
+function enforceCreateRateLimit(req, checkoutId) {
+  const now = Date.now();
+  const key = getClientIp(req);
+  const recent = (createAttempts.get(key) || []).filter(
+    (entry) => now - entry.at < RATE_LIMIT_WINDOW_MS,
+  );
+  if (!recent.some((entry) => entry.checkoutId === checkoutId)) {
+    recent.push({ checkoutId, at: now });
+  }
+  createAttempts.set(key, recent);
+  if (recent.length > RATE_LIMIT_MAX_CHECKOUTS) {
+    const error = new Error(
+      "Trop de tentatives. Veuillez patienter quelques minutes.",
+    );
+    error.status = 429;
+    error.code = "RATE_LIMITED";
+    throw error;
+  }
+}
+
+async function getStripeAccountId(stripe) {
+  if (!stripeAccountPromise) {
+    stripeAccountPromise = stripe.accounts
+      .retrieve()
+      .then((account) => account.id);
+  }
+  try {
+    return await stripeAccountPromise;
+  } catch (error) {
+    stripeAccountPromise = null;
+    throw error;
+  }
+}
+
+function getFallbackImageUrl() {
+  const baseUrl = String(process.env.NEXT_PUBLIC_BASE_URL || "").trim();
+  if (!baseUrl) return "";
+  try {
+    return new URL("/img/home/la-tablee.webp", baseUrl).toString();
+  } catch {
+    return "";
+  }
+}
+
+function sendError(res, error, context = {}) {
+  const status = Number(error?.status) || 500;
+  console.error("[gift-card-payment-api-error]", {
+    ...context,
+    code: error?.code || "INTERNAL_ERROR",
+    status,
+    message: error?.message || String(error),
+  });
+  return res.status(status).json({
+    error:
+      status >= 500
+        ? "Le paiement est momentanément indisponible. Veuillez réessayer."
+        : error.message,
+    code: error?.code || "INTERNAL_ERROR",
   });
 }
 
@@ -91,104 +105,133 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Méthode non autorisée" });
   }
 
-  const { action = "create", restaurantId, giftId } = req.body || {};
+  const body = req.body || {};
+  const action = body.action || "create";
+  const restaurantId = String(body.restaurantId || "");
+  const giftId = String(body.giftId || "");
+  const configuredRestaurantId = String(
+    process.env.NEXT_PUBLIC_RESTAURANT_ID || "",
+  ).trim();
 
   try {
-    const configuredRestaurantId = String(
-      process.env.NEXT_PUBLIC_RESTAURANT_ID || "",
-    ).trim();
-    if (!configuredRestaurantId || String(restaurantId) !== configuredRestaurantId) {
+    if (!configuredRestaurantId || restaurantId !== configuredRestaurantId) {
       return res.status(400).json({ error: "Restaurant invalide" });
     }
-
     const stripe = getStripeClient();
+    const stripeAccountId = await getStripeAccountId(stripe);
 
     if (action === "create") {
-      const trustedGift = await getTrustedGiftCard(restaurantId, giftId);
-      if (trustedGift.error) {
-        return res.status(trustedGift.status).json({ error: trustedGift.error });
-      }
-      if (Number(req.body?.amount) !== trustedGift.amount) {
-        return res.status(409).json({
-          error: "Le prix de cette carte a changé. Rechargez la page.",
-        });
-      }
-      const checkoutId = String(req.body?.checkoutId || "");
+      const checkoutId = String(body.checkoutId || "");
       if (!validateCheckoutId(checkoutId)) {
         return res.status(400).json({ error: "Session de paiement invalide" });
       }
+      enforceCreateRateLimit(req, checkoutId);
 
-      const paymentIntent = await stripe.paymentIntents.create(
+      if (!body.formData || typeof body.formData !== "object") {
+        return res.status(400).json({
+          error: "Les informations de la carte cadeau sont requises.",
+          code: "INVALID_CUSTOMER_DATA",
+        });
+      }
+
+      const checkout = await postGiftCardOrder("checkout", {
+        checkoutId,
+        restaurantId,
+        giftId,
+        customerData: body.formData,
+        fallbackImageUrl: getFallbackImageUrl(),
+        requestFingerprint: getRequestFingerprint(req),
+      });
+      if (Number(body.amount) !== checkout.order.amount) {
+        return res.status(409).json({
+          error: "Le prix de cette carte a changé. Rechargez la page.",
+          code: "AMOUNT_MISMATCH",
+        });
+      }
+
+      let paymentIntent = await stripe.paymentIntents.create(
         {
-          amount: trustedGift.amount,
-          currency: "eur",
-          automatic_payment_methods: { enabled: true, allow_redirects: "never" },
-          metadata: {
-            restaurantId: String(restaurantId),
-            giftId: String(giftId),
-            checkoutId,
-            gustoGiftPriceValidated: "true",
+          amount: checkout.order.amount,
+          currency: checkout.order.currency,
+          automatic_payment_methods: {
+            enabled: true,
+            allow_redirects: "never",
           },
+          metadata: { restaurantId, giftId, checkoutId, type: "gift_card" },
         },
         { idempotencyKey: checkoutId },
       );
-
+      if (paymentIntent.metadata?.type !== "gift_card") {
+        paymentIntent = await stripe.paymentIntents.update(paymentIntent.id, {
+          metadata: { restaurantId, giftId, checkoutId, type: "gift_card" },
+        });
+      }
+      await postGiftCardOrder("payment-intent", {
+        checkoutId,
+        restaurantId,
+        giftId,
+        paymentIntentId: paymentIntent.id,
+        stripeAccountId,
+      });
       return res.status(200).json({
         clientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id,
+        checkoutId,
       });
     }
 
-    if (action === "verify") {
-      const paymentIntentId = String(req.body?.paymentIntentId || "");
-      if (!/^pi_[a-zA-Z0-9_]+$/.test(paymentIntentId)) {
-        return res.status(400).json({ error: "Paiement invalide" });
-      }
-
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      if (paymentIntent.status !== "succeeded") {
-        return res.status(402).json({ error: "Paiement non finalisé" });
-      }
-
-      let trustedAmount = paymentIntent.amount;
-      if (paymentIntent.metadata?.gustoGiftPriceValidated !== "true") {
-        const trustedGift = await getTrustedGiftCard(restaurantId, giftId, {
-          requireAvailable: false,
-        });
-        if (trustedGift.error) {
-          return res.status(trustedGift.status).json({ error: trustedGift.error });
-        }
-        trustedAmount = trustedGift.amount;
-      }
-
-      if (
-        Number(req.body?.amount) !== trustedAmount ||
-        paymentIntent.amount !== trustedAmount ||
-        paymentIntent.amount_received !== trustedAmount ||
-        paymentIntent.currency !== "eur" ||
-        paymentIntent.metadata?.restaurantId !== String(restaurantId) ||
-        paymentIntent.metadata?.giftId !== String(giftId)
-      ) {
-        return res.status(400).json({ error: "Preuve de paiement invalide" });
-      }
-
-      const timestamp = Date.now().toString();
-      const payload = {
-        paymentIntentId,
-        amount: trustedAmount,
-        restaurantId: String(restaurantId),
-        giftId: String(giftId),
-      };
-
-      return res.status(200).json({
-        timestamp,
-        signature: signProof(payload, timestamp),
-        payload,
+    if (action === "finalize") {
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        String(body.paymentIntentId || ""),
+      );
+      const result = await postGiftCardOrder("finalize", {
+        checkoutId: String(body.checkoutId || ""),
+        payment: toPaymentSummary(paymentIntent, stripeAccountId),
+        trigger: "frontend",
       });
+      return res.status(200).json(result);
+    }
+
+    if (action === "status") {
+      let result = await postGiftCardOrder("status", {
+        checkoutId: String(body.checkoutId || ""),
+        restaurantId,
+        giftId,
+      });
+      if (
+        result.order?.paymentIntentId &&
+        result.order?.finalizationStatus !== "finalized"
+      ) {
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          result.order.paymentIntentId,
+        );
+        if (paymentIntent.status === "succeeded") {
+          try {
+            result = await postGiftCardOrder("finalize", {
+              checkoutId: result.order.checkoutId,
+              payment: toPaymentSummary(paymentIntent, stripeAccountId),
+              trigger: "recovery",
+            });
+          } catch (error) {
+            if (error?.code !== "FINALIZATION_IN_PROGRESS") throw error;
+            result = await postGiftCardOrder("status", {
+              checkoutId: String(body.checkoutId || ""),
+              restaurantId,
+              giftId,
+            });
+          }
+        }
+      }
+      return res.status(200).json(result);
     }
 
     return res.status(400).json({ error: "Action invalide" });
   } catch (error) {
-    return sendError(res, error);
+    return sendError(res, error, {
+      checkoutId: body.checkoutId || null,
+      paymentIntentId: body.paymentIntentId || null,
+      restaurantId: restaurantId || null,
+      giftId: giftId || null,
+    });
   }
 }
