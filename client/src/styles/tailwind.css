@@ -95,6 +95,9 @@
   break-inside: avoid;
   page-break-inside: avoid;
 }
+.ambassade-menu-print-group {
+  display: contents;
+}
 .gusto-print-toolbar {
   display: flex;
   align-items: center;
@@ -196,11 +199,6 @@
     content: "";
   }
 
-  .gusto-print-mode [data-print-menus-start] {
-    break-before: page;
-    page-break-before: always;
-  }
-
   [data-print-category-title],
   [data-print-subcategory-title] {
     break-inside: avoid;
@@ -217,6 +215,13 @@
     [data-print-category-first-chunk][data-print-category-without-dishes] {
     break-after: avoid;
     page-break-after: avoid;
+  }
+  .gusto-print-mode [data-print-dish-group] {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   [data-print-dish],
   [data-print-menu] {

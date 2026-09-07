@@ -11,23 +11,46 @@ import {
   isMenuSeparatorLabel,
 } from "@/_assets/utils/menu-display.utils";
 
-function MenuList({ items, continuation = false }) {
+function buildPrintDishGroups(items) {
+  if (items.length <= 3) return [items];
+
+  // Groups of two, or three at the end, prevent a lone trailing dish.
+  const groups = [];
+  let index = 0;
+  while (index < items.length) {
+    const remaining = items.length - index;
+    const groupSize = remaining === 3 ? 3 : 2;
+    groups.push(items.slice(index, index + groupSize));
+    index += groupSize;
+  }
+  return groups;
+}
+
+function MenuList({ groups, continuation = false }) {
   return (
     <div
       className={`ambassade-menu-list ${continuation ? "ambassade-menu-list--continuation" : ""}`}
     >
-      {items.map((item) => (
-        <article
-          key={item.id || item.name}
-          className="ambassade-menu-item"
-          data-print-dish
+      {groups.map((group, groupIndex) => (
+        <div
+          key={`dish-group-${group[0]?.id || group[0]?.name || groupIndex}`}
+          className="ambassade-menu-print-group"
+          data-print-dish-group
         >
-          <div>
-            <h3>{item.name}</h3>
-            {item.description ? <p>{item.description}</p> : null}
-          </div>
-          {item.price ? <strong>{item.price}</strong> : null}
-        </article>
+          {group.map((item) => (
+            <article
+              key={item.id || item.name}
+              className="ambassade-menu-item"
+              data-print-dish
+            >
+              <div>
+                <h3>{item.name}</h3>
+                {item.description ? <p>{item.description}</p> : null}
+              </div>
+              {item.price ? <strong>{item.price}</strong> : null}
+            </article>
+          ))}
+        </div>
       ))}
     </div>
   );
@@ -82,8 +105,9 @@ function buildRows(items, size = 2) {
 }
 
 function CategoryBlock({ block, index }) {
-  const firstDishGroup = block.items.slice(0, 2);
-  const remainingItems = block.items.slice(2);
+  const [firstDishGroup = [], ...remainingDishGroups] = buildPrintDishGroups(
+    block.items,
+  );
 
   return (
     <RevealOnScrollComponent
@@ -103,10 +127,10 @@ function CategoryBlock({ block, index }) {
         {block.description ? (
           <p className="ambassade-menu-intro">{block.description}</p>
         ) : null}
-        <MenuList items={firstDishGroup} />
+        <MenuList groups={[firstDishGroup]} />
       </div>
-      {remainingItems.length ? (
-        <MenuList items={remainingItems} continuation />
+      {remainingDishGroups.length ? (
+        <MenuList groups={remainingDishGroups} continuation />
       ) : null}
     </RevealOnScrollComponent>
   );
@@ -245,7 +269,6 @@ export default function ListMenusComponent({
         <div
           id="menus"
           className="ambassade-menu-shell ambassade-menu-shell--menus"
-          data-print-menus-start={printMode ? "true" : undefined}
         >
           <div className="ambassade-menu-content">
             <div className="ambassade-menu-menu-heading">
