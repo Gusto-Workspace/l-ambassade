@@ -2807,10 +2807,12 @@ a {
 .ambassade-calendar .react-calendar__navigation button { background: transparent !important; font-family: var(--font-bodoni-moda), Didot, serif; font-size: 18px; text-transform: uppercase; }
 .ambassade-calendar .react-calendar__month-view__weekdays { font-family: var(--font-montserrat), Arial, sans-serif; font-size: 9px; text-decoration: none; }
 .ambassade-calendar .react-calendar__month-view__weekdays abbr { text-decoration: none; }
-.ambassade-calendar .react-calendar__tile { height: 42px; background: transparent; font-size: 14px; }
-.ambassade-calendar .react-calendar__tile:enabled:hover { background: rgba(184, 97, 53, 0.09); }
+.ambassade-calendar .react-calendar__tile { height: 42px; background: transparent; font-size: 14px; transition: background-color .2s ease, opacity .2s ease; }
+.ambassade-calendar .react-calendar__tile:enabled:hover { background: rgba(184, 97, 53, 0.09); opacity: .65; }
+.ambassade-calendar .react-calendar__tile:enabled:focus { background: transparent; }
 .ambassade-calendar .react-calendar__tile--active,
-.ambassade-calendar .react-calendar__tile--active:enabled:hover { border-radius: 50%; background: var(--color-copper); color: white; }
+.ambassade-calendar .react-calendar__tile--active:enabled:hover,
+.ambassade-calendar .react-calendar__tile--active:enabled:focus { border-radius: 0; background: var(--color-copper); color: white; }
 .ambassade-calendar .react-calendar__month-view__days__day--neighboringMonth { color: rgba(39,37,33,.3); }
 
 .ambassade-meal-toggle {
