@@ -2,6 +2,7 @@ import { format } from "date-fns";
 
 const DINNER_START_MINUTES = 17 * 60;
 const NIGHT_SERVICE_END_MINUTES = 6 * 60;
+const SERVICE_FULL_BLOCK_SOURCE = "service_full";
 
 export function getReservationParameters(restaurant) {
   return (
@@ -161,9 +162,22 @@ function isBlockedRangeOverlapping({ range, candidateStart, candidateEnd }) {
 
   if (!Number.isFinite(rangeStart) || !Number.isFinite(rangeEnd)) return false;
 
-  return (
-    candidateStart.getTime() < rangeEnd && candidateEnd.getTime() > rangeStart
-  );
+  const startsBeforeRangeEnds =
+    range?.source === SERVICE_FULL_BLOCK_SOURCE
+      ? candidateStart.getTime() <= rangeEnd
+      : candidateStart.getTime() < rangeEnd;
+
+  return startsBeforeRangeEnds && candidateEnd.getTime() > rangeStart;
+}
+
+function isServiceFullBlockedRange(range) {
+  return range?.source === SERVICE_FULL_BLOCK_SOURCE;
+}
+
+function hasServiceFullBlockedRange(parameters) {
+  return Array.isArray(parameters?.blocked_ranges)
+    ? parameters.blocked_ranges.some(isServiceFullBlockedRange)
+    : false;
 }
 
 export function isDateTimeBlocked(parameters, candidateDateTime) {
@@ -183,6 +197,23 @@ export function isDateTimeBlocked(parameters, candidateDateTime) {
       candidateStart,
       candidateEnd,
     }),
+  );
+}
+
+function isDateTimeHardBlocked(parameters, candidateDateTime) {
+  if (!(candidateDateTime instanceof Date)) return false;
+  if (Number.isNaN(candidateDateTime.getTime())) return false;
+
+  const ranges = Array.isArray(parameters?.blocked_ranges)
+    ? parameters.blocked_ranges
+    : [];
+  const candidateStart = new Date(candidateDateTime);
+  const candidateEnd = new Date(candidateDateTime.getTime() + 1);
+
+  return ranges.some(
+    (range) =>
+      !isServiceFullBlockedRange(range) &&
+      isBlockedRangeOverlapping({ range, candidateStart, candidateEnd }),
   );
 }
 
@@ -247,6 +278,12 @@ function hasActiveSlotCoverLimits(parameters) {
     : false;
 }
 
+function hasActiveServiceCoverLimits(parameters) {
+  return [parameters?.max_covers_lunch, parameters?.max_covers_dinner].some(
+    (maxCovers) => Number(maxCovers || 0) > 0,
+  );
+}
+
 function isSlotCoverCapacityAvailable({
   parameters,
   slotCoverUsage = [],
@@ -273,6 +310,35 @@ function isSlotCoverCapacityAvailable({
   const requestedCovers = Math.max(0, Number(numberOfGuests || 0));
 
   return usedCovers + requestedCovers <= limit.maxCovers;
+}
+
+function isServiceCoverCapacityAvailable({
+  parameters,
+  serviceCoverUsage = [],
+  reservationDate,
+  reservationTime,
+  numberOfGuests,
+}) {
+  const service = getServiceBucketFromTime(reservationTime);
+  const maxCovers = Math.floor(
+    Number(
+      service === "lunch"
+        ? parameters?.max_covers_lunch
+        : parameters?.max_covers_dinner,
+    ),
+  );
+  if (!Number.isFinite(maxCovers) || maxCovers <= 0) return true;
+
+  const dateKey = formatReservationDateForApi(reservationDate);
+  const usage = Array.isArray(serviceCoverUsage)
+    ? serviceCoverUsage.find(
+        (item) => String(item?.date || "").slice(0, 10) === dateKey,
+      )
+    : null;
+  const usedCovers = Math.max(0, Number(usage?.[service] || 0));
+  const requestedCovers = Math.max(0, Number(numberOfGuests || 0));
+
+  return usedCovers + requestedCovers <= maxCovers;
 }
 
 function getBlockedTableIdsForDateTime(
@@ -643,6 +709,7 @@ export function getAvailableReservationTimes({
   restaurant,
   reservationsList = [],
   slotCoverUsage = [],
+  serviceCoverUsage = [],
   excludeReservationId = null,
 }) {
   const parsedDate = parseReservationDateValue(reservationDate);
@@ -694,6 +761,16 @@ export function getAvailableReservationTimes({
     }),
   );
 
+  times = times.filter((time) =>
+    isServiceCoverCapacityAvailable({
+      parameters,
+      serviceCoverUsage,
+      reservationDate: parsedDate,
+      reservationTime: time,
+      numberOfGuests,
+    }),
+  );
+
   if (!manage || !numberOfGuests) {
     return times;
   }
@@ -739,6 +816,7 @@ export function getReservationTimeOptions({
   restaurant,
   reservationsList = [],
   slotCoverUsage = [],
+  serviceCoverUsage = [],
   excludeReservationId = null,
 }) {
   const parsedDate = parseReservationDateValue(reservationDate);
@@ -775,7 +853,7 @@ export function getReservationTimeOptions({
   candidateTimes = candidateTimes.filter((time) => {
     const candidateDateTime = buildReservationDateTime(parsedDate, time);
 
-    return !isDateTimeBlocked(parameters, candidateDateTime);
+    return !isDateTimeHardBlocked(parameters, candidateDateTime);
   });
 
   const availableTimes = getAvailableReservationTimes({
@@ -784,13 +862,16 @@ export function getReservationTimeOptions({
     restaurant,
     reservationsList,
     slotCoverUsage,
+    serviceCoverUsage,
     excludeReservationId,
   });
   const availableSet = new Set(availableTimes);
 
   if (
     (!parameters.manage_disponibilities &&
-      !hasActiveSlotCoverLimits(parameters)) ||
+      !hasActiveSlotCoverLimits(parameters) &&
+      !hasActiveServiceCoverLimits(parameters) &&
+      !hasServiceFullBlockedRange(parameters)) ||
     !numberOfGuests ||
     !isPublicWaitlistEnabled(restaurant)
   ) {

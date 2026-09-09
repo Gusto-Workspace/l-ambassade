@@ -26,6 +26,7 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
   const [customer, setCustomer] = useState(emptyCustomer);
   const [reservations, setReservations] = useState([]);
   const [slotCoverUsage, setSlotCoverUsage] = useState([]);
+  const [serviceCoverUsage, setServiceCoverUsage] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -48,9 +49,11 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
       if (!response.ok) throw new Error("availability");
       setReservations(Array.isArray(payload.reservations) ? payload.reservations : []);
       setSlotCoverUsage(Array.isArray(payload.slotCoverUsage) ? payload.slotCoverUsage : []);
+      setServiceCoverUsage(Array.isArray(payload.serviceCoverUsage) ? payload.serviceCoverUsage : []);
     } catch {
       setReservations([]);
       setSlotCoverUsage([]);
+      setServiceCoverUsage([]);
     } finally {
       setLoadingSlots(false);
     }
@@ -154,8 +157,9 @@ export default function AmbassadeBookingComponent({ apiBaseUrl, restaurant, data
       restaurant,
       reservationsList: reservations,
       slotCoverUsage,
+      serviceCoverUsage,
     });
-  }, [date, guests, restaurant, reservations, slotCoverUsage]);
+  }, [date, guests, restaurant, reservations, slotCoverUsage, serviceCoverUsage]);
 
   const visibleTimes = timeOptions.filter((option) => {
     return getServiceBucketFromTime(option.time) === meal;
