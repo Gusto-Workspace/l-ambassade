@@ -8,6 +8,23 @@ const GUSTO_PRINT_PAGE_STYLE = {
   "--gusto-print-margin-block": "10mm",
   "--gusto-print-margin-inline": "12mm",
 };
+const GUSTO_MANAGER_ORIGIN = "https://gusto-manager.com";
+const GUSTO_RETURN_PATH = /^\/(?:en\/|fr\/)?dashboard\/(?:dishes|menus)\/?$/;
+
+function getSafeGustoReturnUrl(value) {
+  if (typeof value !== "string" || !value) return null;
+
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") return null;
+    if (url.origin !== GUSTO_MANAGER_ORIGIN) return null;
+    if (url.username || url.password) return null;
+    if (!GUSTO_RETURN_PATH.test(url.pathname)) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
 
 export function useGustoPrintMode() {
   const router = useRouter();
@@ -37,9 +54,11 @@ export default function GustoPrintComponent({
   dataError,
   children,
 }) {
+  const router = useRouter();
   const triggered = useRef(false);
   const ready = !dataLoading && Boolean(restaurant) && !dataError;
   const hasContent = ready && hasPrintableMenuContent(restaurant);
+  const gustoReturnUrl = getSafeGustoReturnUrl(router.query.gustoReturn);
   useEffect(() => {
     if (!autoPrint || !ready || !hasContent || triggered.current)
       return undefined;
@@ -78,9 +97,14 @@ export default function GustoPrintComponent({
           >
             Imprimer
           </button>
-          <button type="button" onClick={() => window.close()}>
-            Retour à Gusto
-          </button>
+          {gustoReturnUrl ? (
+            <button
+              type="button"
+              onClick={() => window.location.replace(gustoReturnUrl)}
+            >
+              Retour à Gusto
+            </button>
+          ) : null}
         </div>
         {dataLoading ? (
           <p className="gusto-print-status">Chargement de la carte…</p>
@@ -89,13 +113,15 @@ export default function GustoPrintComponent({
         ) : !hasContent ? (
           <div className="gusto-print-status">
             <p>La carte ne contient actuellement aucun plat ou menu publié.</p>
-            <button
-              type="button"
-              onClick={() => window.close()}
-              data-gusto-no-print
-            >
-              Fermer cet onglet
-            </button>
+            {gustoReturnUrl ? (
+              <button
+                type="button"
+                onClick={() => window.location.replace(gustoReturnUrl)}
+                data-gusto-no-print
+              >
+                Retour à Gusto
+              </button>
+            ) : null}
           </div>
         ) : (
           children
