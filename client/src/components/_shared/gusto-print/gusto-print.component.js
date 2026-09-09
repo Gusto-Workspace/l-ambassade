@@ -8,7 +8,7 @@ const GUSTO_PRINT_PAGE_STYLE = {
   "--gusto-print-margin-block": "10mm",
   "--gusto-print-margin-inline": "12mm",
 };
-const GUSTO_MANAGER_ORIGIN = "https://gusto-manager.com";
+const GUSTO_MANAGER_ORIGIN = "https://www.gusto-manager.com";
 const GUSTO_RETURN_PATH = /^\/(?:en\/|fr\/)?dashboard\/(?:dishes|menus)\/?$/;
 
 function getSafeGustoReturnUrl(value) {
