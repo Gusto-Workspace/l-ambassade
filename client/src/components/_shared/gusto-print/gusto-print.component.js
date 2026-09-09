@@ -78,6 +78,9 @@ export default function GustoPrintComponent({
           >
             Imprimer
           </button>
+          <button type="button" onClick={() => window.close()}>
+            Retour à Gusto
+          </button>
         </div>
         {dataLoading ? (
           <p className="gusto-print-status">Chargement de la carte…</p>
