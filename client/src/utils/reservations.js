@@ -18,6 +18,23 @@ export function getOpeningHours(restaurant) {
     : [];
 }
 
+function isExceptionalClosureDate({ reservationDate, restaurant }) {
+  const parsedDate = parseReservationDateValue(reservationDate);
+  if (!parsedDate) return false;
+
+  const dateKey = formatReservationDateForApi(parsedDate);
+  const closures = [
+    ...(Array.isArray(restaurant?.exceptional_closures)
+      ? restaurant.exceptional_closures
+      : []),
+    ...(Array.isArray(restaurant?.exceptionalClosures)
+      ? restaurant.exceptionalClosures
+      : []),
+  ];
+
+  return closures.some((date) => String(date || "").slice(0, 10) === dateKey);
+}
+
 function getExceptionalOpeningForDate({ reservationDate, parameters }) {
   const parsedDate = parseReservationDateValue(reservationDate);
   if (!parsedDate) return null;
@@ -76,6 +93,10 @@ export function formatReservationDateForApi(value) {
 export function getDayHoursForDate({ reservationDate, restaurant }) {
   const parsedDate = parseReservationDateValue(reservationDate);
   if (!parsedDate) return null;
+
+  if (isExceptionalClosureDate({ reservationDate: parsedDate, restaurant })) {
+    return { day: "exceptional-closure", isClosed: true, hours: [] };
+  }
 
   const parameters = getReservationParameters(restaurant);
   const openingHours = getOpeningHours(restaurant);
@@ -714,6 +735,9 @@ export function getAvailableReservationTimes({
 }) {
   const parsedDate = parseReservationDateValue(reservationDate);
   if (!restaurant?._id || !parsedDate) return [];
+  if (isExceptionalClosureDate({ reservationDate: parsedDate, restaurant })) {
+    return [];
+  }
 
   const parameters = getReservationParameters(restaurant);
   const tablesCatalog = getEnabledCatalogTables(parameters);
@@ -821,6 +845,9 @@ export function getReservationTimeOptions({
 }) {
   const parsedDate = parseReservationDateValue(reservationDate);
   if (!restaurant?._id || !parsedDate) return [];
+  if (isExceptionalClosureDate({ reservationDate: parsedDate, restaurant })) {
+    return [];
+  }
 
   const parameters = getReservationParameters(restaurant);
   const dayHours = getDayHoursForDate({
