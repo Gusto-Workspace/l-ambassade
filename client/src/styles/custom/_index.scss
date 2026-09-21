@@ -2808,6 +2808,7 @@ a {
 .ambassade-calendar .react-calendar__month-view__weekdays { font-family: var(--font-montserrat), Arial, sans-serif; font-size: 9px; text-decoration: none; }
 .ambassade-calendar .react-calendar__month-view__weekdays abbr { text-decoration: none; }
 .ambassade-calendar .react-calendar__tile { height: 42px; background: transparent; font-size: 14px; transition: background-color .2s ease, opacity .2s ease; }
+.ambassade-calendar .react-calendar__month-view__days__day--weekend:enabled:not(.react-calendar__tile--active):not(.react-calendar__month-view__days__day--neighboringMonth) { color: var(--color-text); }
 .ambassade-calendar .react-calendar__tile:enabled:hover { background: rgba(184, 97, 53, 0.09); opacity: .65; }
 .ambassade-calendar .react-calendar__tile:enabled:focus { background: transparent; }
 .ambassade-calendar .react-calendar__tile--active,
