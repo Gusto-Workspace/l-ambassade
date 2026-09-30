@@ -122,15 +122,21 @@ function getSingularCategoryLabel(value) {
   return label;
 }
 
+function getMenuDishLine(dish) {
+  const name = String(dish?.name || dish || "").trim();
+  const description = String(dish?.description || "").trim();
+  return name ? (description ? { name, description } : name) : null;
+}
+
 function buildCustomGroupLines(group) {
   const dishes = Array.isArray(group?.dishes) ? group.dishes : [];
   const relations = Array.isArray(group?.relations) ? group.relations : [];
 
   return dishes.reduce((lines, dish, index) => {
-    const dishName = String(dish?.name || dish || "").trim();
+    const dishLine = getMenuDishLine(dish);
 
-    if (dishName) {
-      lines.push(dishName);
+    if (dishLine) {
+      lines.push(dishLine);
     }
 
     if (index < dishes.length - 1) {
@@ -170,7 +176,7 @@ function buildCustomBlocks(menu) {
   }
 
   const fallbackLines = (menu?.dishes || [])
-    .map((dish) => String(dish?.name || dish || "").trim())
+    .map(getMenuDishLine)
     .filter(Boolean);
 
   if (!fallbackLines.length) {

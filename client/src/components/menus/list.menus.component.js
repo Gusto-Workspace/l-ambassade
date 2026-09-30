@@ -173,7 +173,12 @@ function MenuOffer({ menu, index }) {
                   {line}
                 </p>
               ) : (
-                <p key={`${block.id}-line-${lineIndex}`}>{line}</p>
+                <p key={`${block.id}-line-${lineIndex}`}>
+                  {line?.name || line}
+                  {line?.description ? (
+                    <span className="block text-[0.85em] opacity-60">{line.description}</span>
+                  ) : null}
+                </p>
               ),
             )}
           </section>
