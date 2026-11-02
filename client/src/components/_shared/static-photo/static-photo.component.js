@@ -21,7 +21,7 @@ export function hasStaticPhoto(src) {
 
 export default function StaticPhoto({ src, alt, sizes, priority = false, className, style }) {
   const widths = PHOTO_WIDTHS[src];
-  const path = (width) => src.replace("/img/", "/img/optimized/").replace(/\.webp$/, `-${width}.webp`);
+  const path = (width) => width === widths[widths.length - 1] ? src : src.replace(/\.webp$/, `-${width}.webp`);
   const srcSet = widths.map((width) => `${path(width)} ${width}w`).join(", ");
   const fallback = path(widths[widths.length - 1]);
 
