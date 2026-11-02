@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/_shared/static-photo/static-photo.component";
 import RevealOnScrollComponent from "@/components/_shared/motion/reveal-on-scroll.component";
 
 export default function TableeHomeSection() {
@@ -29,7 +29,6 @@ export default function TableeHomeSection() {
           <Image
             src="/img/home/la-tablee.webp"
             alt="Grande table dressée dans la verrière de L’Ambassade"
-            fill
             sizes="(max-width: 767px) 100vw, 58vw"
             className="object-cover object-center"
           />

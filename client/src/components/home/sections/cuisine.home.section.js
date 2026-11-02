@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/_shared/static-photo/static-photo.component";
 import Link from "next/link";
 import RevealOnScrollComponent from "@/components/_shared/motion/reveal-on-scroll.component";
 
@@ -25,8 +25,7 @@ export default function CuisineHomeSection() {
           <Image
             src="/img/home/le-feu.webp"
             alt="Assiette de saison servie au bord de la piscine"
-            fill
-            sizes="(max-width: 767px) 100vw, 58vw"
+            sizes="(max-width: 767px) 100vw, 58.5vw"
             className="object-cover object-[center_56%]"
           />
         </RevealOnScrollComponent>

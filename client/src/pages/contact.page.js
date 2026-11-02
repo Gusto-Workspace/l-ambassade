@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/_shared/static-photo/static-photo.component";
 import Link from "next/link";
 import { CarFront, Clock3, Mail, MapPin, Phone, Users } from "lucide-react";
 import { GlobalContext } from "@/contexts/global.context";
@@ -68,7 +68,7 @@ export default function ContactPage({ seoRestaurantData = null }) {
       <section className="ambassade-contact-map">
         <div className="ambassade-contact-map__frame">{mapSrc ? <iframe title="Plan d’accès à L’Ambassade" src={mapSrc} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /> : <span>Montauban</span>}</div>
         <div className="ambassade-contact-map__visit">
-          <div className="ambassade-contact-map__image"><Image src="/img/contact/calm.webp" alt="Les extérieurs de L’Ambassade" fill sizes="(max-width: 767px) 100vw, 55vw" className="object-cover" /></div>
+          <div className="ambassade-contact-map__image"><Image src="/img/contact/calm.webp" alt="Les extérieurs de L’Ambassade" sizes="(max-width: 767px) 100vw, 57.5vw" className="object-cover" /></div>
           <EditorialHeadingComponent title="Au calme, à Montauban." description="Un lieu à part, à quelques minutes du centre-ville." />
           <div className="ambassade-contact-map__actions"><a className="ambassade-button ambassade-button--outline" href={mapSrc ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address?.value || "L'Ambassade Montauban")}` : "#"} target="_blank" rel="noreferrer">Ouvrir l’itinéraire</a><Link className="ambassade-button ambassade-button--outline" href="/reservations">Réserver une table</Link></div>
         </div>

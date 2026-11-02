@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/_shared/static-photo/static-photo.component";
 import RevealOnScrollComponent from "@/components/_shared/motion/reveal-on-scroll.component";
 
 export default function EveningHomeSection() {
@@ -9,7 +9,6 @@ export default function EveningHomeSection() {
           <Image
             src="/img/home/la-nuit.webp"
             alt="Verres et planche à partager dans le jardin en soirée"
-            fill
             sizes="(max-width: 767px) 100vw, 50vw"
             className="object-cover object-[center_54%]"
           />

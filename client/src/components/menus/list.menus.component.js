@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/_shared/static-photo/static-photo.component";
 import RevealOnScrollComponent from "../_shared/motion/reveal-on-scroll.component";
 import EditorialHeadingComponent from "../_shared/editorial-heading/editorial-heading.component";
 import { getVisibleDishCategories } from "@/_assets/utils/site-display.utils";
@@ -239,7 +239,6 @@ export default function ListMenusComponent({
               <Image
                 src="/img/menu/separation.webp"
                 alt="Cuisine de L’Ambassade"
-                fill
                 sizes="100vw"
                 className="object-cover object-[center_62%]"
               />

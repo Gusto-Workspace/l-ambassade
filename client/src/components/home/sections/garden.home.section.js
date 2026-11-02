@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/_shared/static-photo/static-photo.component";
 import RevealOnScrollComponent from "@/components/_shared/motion/reveal-on-scroll.component";
 
 export default function GardenHomeSection() {
@@ -9,14 +9,13 @@ export default function GardenHomeSection() {
           <Image
             src="/img/home/le-jardin.webp"
             alt="Salle sous la verrière entourée de plantes"
-            fill
-            sizes="(max-width: 767px) 100vw, 48vw"
+            sizes="(max-width: 767px) 100vw, 47vw"
             className="object-cover object-[center_44%]"
           />
         </RevealOnScrollComponent>
 
         <RevealOnScrollComponent variant="soft" className="ambassade-garden__photo ambassade-garden__photo--leaf site-media-zoom" aria-hidden="true">
-          <Image src="/img/home/leaf.webp" alt="" fill sizes="(max-width: 767px) 100vw, 12vw" className="object-cover" />
+          <Image src="/img/home/leaf.webp" alt="" sizes="(max-width: 767px) 100vw, 11vw" className="object-cover" />
         </RevealOnScrollComponent>
 
         <RevealOnScrollComponent

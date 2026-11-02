@@ -1,4 +1,5 @@
 import Image from "next/image";
+import StaticPhoto, { hasStaticPhoto } from "../static-photo/static-photo.component";
 import RevealOnScrollComponent from "../motion/reveal-on-scroll.component";
 import { StarOrnament } from "../../home/ornament.home.component";
 
@@ -13,15 +14,16 @@ export default function InnerPageHeroComponent({
   imagePosition = "center",
   compact = false,
 }) {
+  const HeroImage = hasStaticPhoto(image) ? StaticPhoto : Image;
   return (
     <section
       ref={heroRef}
       className={`ambassade-subhero${compact ? " ambassade-subhero--compact" : ""}`}
     >
-      <Image
+      <HeroImage
         src={image}
         alt=""
-        fill
+        {...(!hasStaticPhoto(image) ? { fill: true } : {})}
         priority
         sizes="100vw"
         className="ambassade-subhero__image"

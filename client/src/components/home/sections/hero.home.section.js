@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/_shared/static-photo/static-photo.component";
 import Link from "next/link";
 import { StarOrnament } from "../ornament.home.component";
 
@@ -8,7 +8,6 @@ export default function HeroHomeSection({ heroRef = null }) {
       <Image
         src="/img/home/header.webp"
         alt="Jardin, piscine et maison de L’Ambassade à Montauban"
-        fill
         priority
         sizes="100vw"
         className="ambassade-hero__image"
